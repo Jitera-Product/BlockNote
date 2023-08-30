@@ -50,6 +50,10 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     renderCursor?: (user: any) => HTMLElement;
   };
 }) => {
+  const CustomLink = Link.extend({
+    inclusive: false,
+  });
+
   const ret: Extensions = [
     extensions.ClipboardTextSerializer,
     extensions.Commands,
@@ -83,7 +87,7 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     Italic,
     Strike,
     Underline,
-    Link,
+    CustomLink,
     TextColorMark,
     TextColorExtension,
     BackgroundColorMark,
