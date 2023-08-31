@@ -262,6 +262,10 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     // Shows or updates menu position whenever the cursor moves, if the menu isn't frozen.
     document.body.addEventListener("mousemove", this.onMouseMove, true);
 
+    this.onMouseDown = this.onMouseDown.bind(this);
+
+    document.body.addEventListener("mousedown", this.onMouseDown);
+
     // Makes menu scroll with the page.
     document.addEventListener("scroll", this.onScroll);
 
@@ -535,6 +539,14 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
         type: "drag",
       })
     );
+  }
+
+  onMouseDown() {
+    if (this.sideMenuState) {
+      this.sideMenuState.show = true;
+      this.updateSideMenu(this.sideMenuState);
+      this.menuFrozen = false;
+    }
   }
 }
 
