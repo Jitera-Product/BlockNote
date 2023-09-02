@@ -1,5 +1,5 @@
 import { Editor, EditorOptions, Extension } from "@tiptap/core";
-import { Node } from "prosemirror-model";
+import { Node, Slice } from "prosemirror-model";
 // import "./blocknote.css";
 import { Editor as TiptapEditor } from "@tiptap/core/dist/packages/core/src/Editor";
 import * as Y from "yjs";
@@ -141,16 +141,33 @@ const blockNoteTipTapOptions = {
   enableCoreExtensions: false,
 };
 
+const MAX_NUM_LINES = 800;
+
 export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public readonly _tiptapEditor: TiptapEditor & { contentComponent: any };
   public blockCache = new WeakMap<Node, Block<BSchema>>();
   public readonly schema: BSchema;
   public ready = false;
+  public errorCallback = () => {}; // defined by whichever application is using the editor so we can customize the error handling logic
 
   public readonly sideMenu: SideMenuProsemirrorPlugin<BSchema>;
   public readonly formattingToolbar: FormattingToolbarProsemirrorPlugin<BSchema>;
   public readonly slashMenu: SlashMenuProsemirrorPlugin<BSchema, any>;
   public readonly hyperlinkToolbar: HyperlinkToolbarProsemirrorPlugin<BSchema>;
+
+  handleLinesLimit(slice: Slice): boolean {
+    if (
+      !this._tiptapEditor.state.doc.firstChild?.childCount ||
+      !slice.content.firstChild?.childCount ||
+      this._tiptapEditor.state.doc.firstChild?.childCount +
+        slice.content.firstChild?.childCount >
+        MAX_NUM_LINES + 1
+    ) {
+      this.errorCallback();
+      return true; // meaning new lines won't be added
+    }
+    return false;
+  }
 
   constructor(
     private readonly options: Partial<BlockNoteEditorOptions<BSchema>> = {}
@@ -262,6 +279,26 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
           ? newOptions._tiptapOptions?.extensions
           : [...(newOptions._tiptapOptions?.extensions || []), ...extensions],
       editorProps: {
+        handleDrop: (_view, _event, slice, _moved) => {
+          return this.handleLinesLimit(slice);
+        },
+        handleKeyDown: (_view, event) => {
+          if (event.key === "Enter") {
+            if (
+              !this._tiptapEditor.state.doc.firstChild?.childCount ||
+              this._tiptapEditor.state.doc.firstChild?.childCount >=
+                MAX_NUM_LINES + 1
+            ) {
+              this.errorCallback();
+              return true; // meaning new lines won't be added
+            }
+          }
+          return false;
+        },
+
+        handlePaste: (_view, _event, slice) => {
+          return this.handleLinesLimit(slice);
+        },
         attributes: {
           ...newOptions.domAttributes?.editor,
           class: mergeCSSClasses(
