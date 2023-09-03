@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BlockNoteEditor, BlockSchema } from "@blocknote/core";
 import { IconType } from "react-icons";
 import {
@@ -100,6 +100,19 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
     [block.type, filteredItems]
   );
 
+  const isSelected = useCallback(
+    (block: any, item: BlockTypeDropdownItem): boolean => {
+      return (
+        block.type === item.type &&
+        (item.type !== "heading" ||
+          (block.props.level &&
+            item.props?.level &&
+            block.props.level === item.props?.level))
+      );
+    },
+    [block]
+  );
+
   const fullItems: ToolbarDropdownItemProps[] = useMemo(
     () =>
       filteredItems.map((item) => ({
@@ -109,10 +122,10 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
           props.editor.focus();
           props.editor.updateBlock(block, {
             type: item.type,
-            props: {},
+            props: item.props,
           });
         },
-        isSelected: block.type === item.type,
+        isSelected: isSelected(block, item),
       })),
     [block, filteredItems, props.editor]
   );

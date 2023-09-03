@@ -4,11 +4,39 @@ import { EditorContent } from "@tiptap/react";
 import { HTMLAttributes, ReactNode, useMemo } from "react";
 import usePrefersColorScheme from "use-prefers-color-scheme";
 import { blockNoteToMantineTheme, Theme } from "./BlockNoteTheme";
-import { FormattingToolbarPositioner } from "./FormattingToolbar/components/FormattingToolbarPositioner";
+import {
+  FormattingToolbarPositioner,
+  FormattingToolbarProps,
+} from "./FormattingToolbar/components/FormattingToolbarPositioner";
 import { HyperlinkToolbarPositioner } from "./HyperlinkToolbar/components/HyperlinkToolbarPositioner";
 import { SideMenuPositioner } from "./SideMenu/components/SideMenuPositioner";
 import { SlashMenuPositioner } from "./SlashMenu/components/SlashMenuPositioner";
 import { darkDefaultTheme, lightDefaultTheme } from "./defaultThemes";
+import {
+  BlockTypeDropdown,
+  BlockTypeDropdownItem,
+} from "./FormattingToolbar/components/DefaultDropdowns/BlockTypeDropdown";
+import { Toolbar } from "./SharedComponents/Toolbar/components/Toolbar";
+import { ToggledStyleButton } from "./FormattingToolbar/components/DefaultButtons/ToggledStyleButton";
+import { ColorStyleButton } from "./FormattingToolbar/components/DefaultButtons/ColorStyleButton";
+import { CreateLinkButton } from "./FormattingToolbar/components/DefaultButtons/CreateLinkButton";
+
+const CustomFormattingToolbar = <BSchema extends BlockSchema>(
+  props: FormattingToolbarProps<BSchema> & {
+    blockTypeDropdownItems?: BlockTypeDropdownItem[];
+  }
+) => {
+  return (
+    <Toolbar>
+      <BlockTypeDropdown {...props} items={props.blockTypeDropdownItems} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={"bold"} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={"italic"} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={"underline"} />
+      <ColorStyleButton editor={props.editor} />
+      <CreateLinkButton editor={props.editor} />
+    </Toolbar>
+  );
+};
 
 // Renders the editor as well as all menus & toolbars using default styles.
 function BaseBlockNoteView<BSchema extends BlockSchema>(
@@ -30,7 +58,10 @@ function BaseBlockNoteView<BSchema extends BlockSchema>(
       {...rest}>
       {props.children || (
         <>
-          <FormattingToolbarPositioner editor={props.editor} />
+          <FormattingToolbarPositioner
+            editor={props.editor}
+            formattingToolbar={CustomFormattingToolbar}
+          />
           <HyperlinkToolbarPositioner editor={props.editor} />
           <SlashMenuPositioner editor={props.editor} />
           <SideMenuPositioner editor={props.editor} />
