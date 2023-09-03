@@ -50,6 +50,7 @@ import { SlashMenuProsemirrorPlugin } from "./extensions/SlashMenu/SlashMenuPlug
 import { getDefaultSlashMenuItems } from "./extensions/SlashMenu/defaultSlashMenuItems";
 import { UniqueID } from "./extensions/UniqueID/UniqueID";
 import { mergeCSSClasses } from "./shared/utils";
+import normalizeUrl from "normalize-url";
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
@@ -692,13 +693,19 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       return;
     }
 
+    const normalizedUrl = url.startsWith("/")
+      ? url
+      : normalizeUrl(url, { defaultProtocol: "https" });
+
     const { from, to } = this._tiptapEditor.state.selection;
 
     if (!text) {
       text = this._tiptapEditor.state.doc.textBetween(from, to);
     }
 
-    const mark = this._tiptapEditor.schema.mark("link", { href: url });
+    const mark = this._tiptapEditor.schema.mark("link", {
+      href: normalizedUrl,
+    });
 
     this._tiptapEditor.view.dispatch(
       this._tiptapEditor.view.state.tr
