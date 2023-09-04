@@ -71,6 +71,7 @@
     "@tiptap/pm": "^2.0.3",
     "hast-util-from-dom": "^4.2.0",
     "lodash": "^4.17.21",
+    "normalize-url": "^8.0.0",
     "prosemirror-model": "^1.18.3",
     "prosemirror-state": "^1.4.3",
     "prosemirror-transform": "^1.7.2",
