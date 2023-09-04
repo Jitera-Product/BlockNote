@@ -158,11 +158,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
 
   handleLinesLimit(slice: Slice): boolean {
     if (
-      !this._tiptapEditor.state.doc.firstChild?.childCount ||
-      !slice.content.firstChild?.childCount ||
-      this._tiptapEditor.state.doc.firstChild?.childCount +
-        slice.content.firstChild?.childCount >
-        MAX_NUM_LINES + 1
+      (this._tiptapEditor.state.doc.firstChild?.childCount ?? 0) +
+        (slice.content.firstChild?.childCount ?? 0) >
+      MAX_NUM_LINES + 1
     ) {
       this.errorCallback();
       return true; // meaning new lines won't be added
