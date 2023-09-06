@@ -65,6 +65,8 @@ export type PropSpec = {
 // for the external API.
 export type PropSchema = Record<string, PropSpec>;
 
+export type CustomSchema = Record<string, any>;
+
 // Defines Props objects for use in Block objects in the external API. Converts
 // each prop spec into a union type of its possible values, or a string if no
 // values are specified.
@@ -82,12 +84,14 @@ export type Props<PSchema extends PropSchema> = {
 export type BlockConfig<
   Type extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 > = {
   // Attributes to define block in the API as well as a TipTap node.
   type: Type;
   readonly propSchema: PSchema;
+  readonly customSchema: CSchema;
 
   // Additional attributes to help define block as a TipTap node.
   containsInlineContent: ContainsInlineContent;
@@ -96,7 +100,7 @@ export type BlockConfig<
      * The custom block to render
      */
     block: SpecificBlock<
-      BSchema & { [k in Type]: BlockSpec<Type, PSchema> },
+      BSchema & { [k in Type]: BlockSpec<Type, PSchema, CSchema> },
       Type
     >,
     /**
@@ -104,7 +108,9 @@ export type BlockConfig<
      * This is typed generically. If you want an editor with your custom schema, you need to
      * cast it manually, e.g.: `const e = editor as BlockNoteEditor<typeof mySchema>;`
      */
-    editor: BlockNoteEditor<BSchema & { [k in Type]: BlockSpec<Type, PSchema> }>
+    editor: BlockNoteEditor<
+      BSchema & { [k in Type]: BlockSpec<Type, PSchema, CSchema> }
+    >
     // (note) if we want to fix the manual cast, we need to prevent circular references and separate block definition and render implementations
     // or allow manually passing <BSchema>, but that's not possible without passing the other generics because Typescript doesn't support partial inferred generics
   ) => ContainsInlineContent extends true
@@ -121,18 +127,23 @@ export type BlockConfig<
 // the TipTap node used to implement it. Usually created using `createBlockSpec`
 // though it can also be defined from scratch by providing your own TipTap node,
 // allowing for more advanced custom blocks.
-export type BlockSpec<Type extends string, PSchema extends PropSchema> = {
+export type BlockSpec<
+  Type extends string,
+  PSchema extends PropSchema,
+  CSchema extends CustomSchema
+> = {
   readonly propSchema: PSchema;
+  readonly customSchema: CSchema;
   node: TipTapNode<Type, any>;
 };
 
 // Utility type. For a given object block schema, ensures that the key of each
 // block spec matches the name of the TipTap node in it.
 export type TypesMatch<
-  Blocks extends Record<string, BlockSpec<string, PropSchema>>
+  Blocks extends Record<string, BlockSpec<string, PropSchema, CustomSchema>>
 > = Blocks extends {
   [Type in keyof Blocks]: Type extends string
-    ? Blocks[Type] extends BlockSpec<Type, PropSchema>
+    ? Blocks[Type] extends BlockSpec<Type, PropSchema, CustomSchema>
       ? Blocks[Type]
       : never
     : never;
@@ -146,7 +157,7 @@ export type TypesMatch<
 // both the blocks' internal implementation (as TipTap nodes) and the type
 // information for the external API.
 export type BlockSchema = TypesMatch<
-  Record<string, BlockSpec<string, PropSchema>>
+  Record<string, BlockSpec<string, PropSchema, CustomSchema>>
 >;
 
 // Converts each block spec into a Block object without children. We later merge
@@ -158,6 +169,7 @@ type BlocksWithoutChildren<BSchema extends BlockSchema> = {
     type: BType;
     props: Props<BSchema[BType]["propSchema"]>;
     content: InlineContent[];
+    custom: Record<string, any>;
   };
 };
 
@@ -183,6 +195,7 @@ type PartialBlocksWithoutChildren<BSchema extends BlockSchema> = {
     type: BType;
     props: Partial<Props<BSchema[BType]["propSchema"]>>;
     content: PartialInlineContent[] | string;
+    custom: Record<string, any>;
   }>;
 };
 

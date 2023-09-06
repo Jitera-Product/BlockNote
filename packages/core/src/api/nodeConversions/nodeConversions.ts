@@ -157,7 +157,11 @@ export function blockToNode<BSchema extends BlockSchema>(
     );
   } else {
     const nodes = inlineContentToNodes(block.content, schema);
-    contentNode = schema.nodes[type].create(block.props, nodes);
+    contentNode = schema.nodes[type].create(
+      { ...block.props, custom: block.custom },
+      nodes
+    );
+    console.log("contentNode", contentNode);
   }
 
   const children: Node[] = [];
@@ -422,6 +426,7 @@ export function nodeToBlock<BSchema extends BlockSchema>(
     id,
     type: blockInfo.contentType.name,
     props,
+    custom: {},
     content,
     children,
   };
