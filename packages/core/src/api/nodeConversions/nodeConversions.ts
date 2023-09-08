@@ -44,6 +44,12 @@ function styledTextToNodes(styledText: StyledText, schema: Schema): Node[] {
     }
   }
 
+  marks.push(
+    schema.mark("customContentProps", {
+      customContentProps: styledText.customContentProps,
+    })
+  );
+
   return (
     styledText.text
       // Splits text & line breaks.
@@ -149,15 +155,21 @@ export function blockToNode<BSchema extends BlockSchema>(
   let contentNode: Node;
 
   if (!block.content) {
-    contentNode = schema.nodes[type].create(block.props);
+    contentNode = schema.nodes[type].create({
+      ...block.props,
+      customProps: block.customProps,
+    });
   } else if (typeof block.content === "string") {
     contentNode = schema.nodes[type].create(
-      block.props,
+      { ...block.props, customProps: block.customProps },
       schema.text(block.content)
     );
   } else {
     const nodes = inlineContentToNodes(block.content, schema);
-    contentNode = schema.nodes[type].create(block.props, nodes);
+    contentNode = schema.nodes[type].create(
+      { ...block.props, customProps: block.customProps },
+      nodes
+    );
   }
 
   const children: Node[] = [];
@@ -170,13 +182,16 @@ export function blockToNode<BSchema extends BlockSchema>(
 
   const groupNode = schema.nodes["blockGroup"].create({}, children);
 
-  return schema.nodes["blockContainer"].create(
+  const blockContainer = schema.nodes["blockContainer"].create(
     {
       id: id,
       ...block.props,
+      customProps: block.customProps,
     },
     children.length > 0 ? [contentNode, groupNode] : contentNode
   );
+
+  return blockContainer;
 }
 
 /**
@@ -188,6 +203,8 @@ function contentNodeToInlineContent(contentNode: Node) {
 
   // Most of the logic below is for handling links because in ProseMirror links are marks
   // while in BlockNote links are a type of inline content
+  let customContentProps: any;
+
   contentNode.content.forEach((node) => {
     // hardBreak nodes do not have an InlineContent equivalent, instead we
     // add a newline to the previous node.
@@ -224,6 +241,8 @@ function contentNodeToInlineContent(contentNode: Node) {
         styles[mark.type.name as ToggledStyle] = true;
       } else if (colorStyles.has(mark.type.name as ColorStyle)) {
         styles[mark.type.name as ColorStyle] = mark.attrs.color;
+      } else if (mark.type.name === "customContentProps") {
+        customContentProps = mark.attrs.customContentProps;
       } else {
         throw Error("Mark is of an unrecognized type: " + mark.type.name);
       }
@@ -322,6 +341,8 @@ function contentNodeToInlineContent(contentNode: Node) {
           text: node.textContent,
           styles,
         };
+
+        currentContent.customContentProps = customContentProps;
       }
       // Node is a link.
       else {
@@ -341,6 +362,8 @@ function contentNodeToInlineContent(contentNode: Node) {
   });
 
   if (currentContent) {
+    (currentContent as InlineContent).customContentProps = customContentProps;
+
     content.push(currentContent);
   }
 
@@ -404,7 +427,11 @@ export function nodeToBlock<BSchema extends BlockSchema>(
     // The blockContainer node is the same for all block types, but some custom blocks might not use backgroundColor & textColor,
     // so these 2 props are technically unexpected but we shouldn't log a warning.
     // (this is a bit hacky)
-    else if (attr !== "id" && !(attr in defaultProps)) {
+    else if (
+      attr !== "id" &&
+      attr !== "customProps" &&
+      !(attr in defaultProps)
+    ) {
       console.warn("Block has an unrecognized attribute: " + attr);
     }
   }
@@ -422,6 +449,7 @@ export function nodeToBlock<BSchema extends BlockSchema>(
     id,
     type: blockInfo.contentType.name,
     props,
+    customProps: node.attrs.customProps,
     content,
     children,
   };

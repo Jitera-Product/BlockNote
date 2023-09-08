@@ -32,6 +32,8 @@ import { TextColorExtension } from "./extensions/TextColor/TextColorExtension";
 import { TextColorMark } from "./extensions/TextColor/TextColorMark";
 import { TrailingNode } from "./extensions/TrailingNode/TrailingNodeExtension";
 import UniqueID from "./extensions/UniqueID/UniqueID";
+import { BlockContainerCustomPropsExtension } from "./extensions/Blocks/custom/BlockContainerCustomPropsExtension";
+import { CustomContentPropsMark } from "./extensions/CustomMark/CustomMark";
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -93,7 +95,7 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     BackgroundColorMark,
     BackgroundColorExtension,
     TextAlignmentExtension,
-
+    CustomContentPropsMark,
     // nodes
     Doc,
     BlockContainer.configure({
@@ -109,6 +111,7 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
       })
     ),
     CustomBlockSerializerExtension,
+    BlockContainerCustomPropsExtension,
 
     Dropcursor.configure({ width: 5, color: "#ddeeff" }),
     // This needs to be at the bottom of this list, because Key events (such as enter, when selecting a /command),

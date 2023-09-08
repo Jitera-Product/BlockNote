@@ -1,5 +1,9 @@
 import { Attribute, Node } from "@tiptap/core";
-import { BlockNoteDOMAttributes, BlockNoteEditor } from "../../..";
+import {
+  BlockNoteDOMAttributes,
+  BlockNoteEditor,
+  CustomSchema,
+} from "../../..";
 import styles from "../nodes/Block.module.css";
 import {
   BlockConfig,
@@ -20,11 +24,12 @@ export function camelToDataKebab(str: string): string {
 export function propsToAttributes<
   BType extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 >(
   blockConfig: Omit<
-    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+    BlockConfig<BType, PSchema, CSchema, ContainsInlineContent, BSchema>,
     "render"
   >
 ) {
@@ -56,11 +61,12 @@ export function propsToAttributes<
 export function parse<
   BType extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 >(
   blockConfig: Omit<
-    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+    BlockConfig<BType, PSchema, CSchema, ContainsInlineContent, BSchema>,
     "render"
   >
 ) {
@@ -77,11 +83,12 @@ export function parse<
 export function render<
   BType extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 >(
   blockConfig: Omit<
-    BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>,
+    BlockConfig<BType, PSchema, CSchema, ContainsInlineContent, BSchema>,
     "render"
   >,
   HTMLAttributes: Record<string, any>
@@ -120,11 +127,18 @@ export function render<
 export function createBlockSpec<
   BType extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 >(
-  blockConfig: BlockConfig<BType, PSchema, ContainsInlineContent, BSchema>
-): BlockSpec<BType, PSchema> {
+  blockConfig: BlockConfig<
+    BType,
+    PSchema,
+    CSchema,
+    ContainsInlineContent,
+    BSchema
+  >
+): BlockSpec<BType, PSchema, CSchema> {
   const node = createTipTapBlock<
     BType,
     {
@@ -176,7 +190,7 @@ export function createBlockSpec<
 
         // Gets BlockNote editor instance
         const editor = this.options.editor! as BlockNoteEditor<
-          BSchema & { [k in BType]: BlockSpec<BType, PSchema> }
+          BSchema & { [k in BType]: BlockSpec<BType, PSchema, CSchema> }
         >;
         // Gets position of the node
         if (typeof getPos === "boolean") {
@@ -237,6 +251,7 @@ export function createBlockSpec<
   return {
     node: node as TipTapNode<BType>,
     propSchema: blockConfig.propSchema,
+    customSchema: blockConfig.customSchema,
   };
 }
 
