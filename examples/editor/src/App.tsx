@@ -26,8 +26,10 @@ function App() {
         {
           type: "text",
           text: "textUntitled",
-          styles: {},
-          custom: {
+          styles: {
+            textColor: "yellow",
+          },
+          customContentProps: {
             mention: "abc",
           },
         },
@@ -37,17 +39,17 @@ function App() {
           styles: {
             textColor: "red",
           },
-          custom: {
+          customContentProps: {
             linkToPage: "pageAbc",
           },
         },
       ],
       props: {
         textColor: "default",
-        backgroundColor: "default",
+        backgroundColor: "red",
         textAlignment: "left",
       },
-      custom: {
+      customProps: {
         properties: {
           category: "specification",
         },
@@ -61,16 +63,19 @@ function App() {
           type: "text",
           text: "Untitled",
           styles: {},
+          customContentProps: {
+            anything: "abc",
+          },
         },
       ],
       props: {
         textColor: "default",
-        backgroundColor: "default",
+        backgroundColor: "red",
         textAlignment: "left",
       },
-      custom: {
+      customProps: {
         properties: {
-          category: "aaaaaaaa",
+          parent_id: "29",
         },
       },
       children: [],
@@ -79,6 +84,7 @@ function App() {
 
   useEffect(() => {
     editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks);
+    console.log(editor.topLevelBlocks);
   }, []);
 
   // Give tests a way to get prosemirror instance

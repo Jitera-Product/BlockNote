@@ -169,7 +169,7 @@ type BlocksWithoutChildren<BSchema extends BlockSchema> = {
     type: BType;
     props: Props<BSchema[BType]["propSchema"]>;
     content: InlineContent[];
-    custom: Record<string, any>;
+    customProps?: Record<string, any>;
   };
 };
 
@@ -195,7 +195,7 @@ type PartialBlocksWithoutChildren<BSchema extends BlockSchema> = {
     type: BType;
     props: Partial<Props<BSchema[BType]["propSchema"]>>;
     content: PartialInlineContent[] | string;
-    custom: Record<string, any>;
+    customProps?: Record<string, any>;
   }>;
 };
 

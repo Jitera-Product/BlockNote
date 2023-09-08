@@ -7,6 +7,7 @@ import {
   blockStyles,
   camelToDataKebab,
   createTipTapBlock,
+  CustomSchema,
   mergeCSSClasses,
   parse,
   PropSchema,
@@ -25,18 +26,31 @@ import { createContext, ElementType, FC, HTMLProps, useContext } from "react";
 export type ReactBlockConfig<
   Type extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 > = Omit<
-  BlockConfig<Type, PSchema, ContainsInlineContent, BSchema>,
+  BlockConfig<Type, PSchema, CSchema, ContainsInlineContent, BSchema>,
   "render"
 > & {
   render: FC<{
     block: Parameters<
-      BlockConfig<Type, PSchema, ContainsInlineContent, BSchema>["render"]
+      BlockConfig<
+        Type,
+        PSchema,
+        CSchema,
+        ContainsInlineContent,
+        BSchema
+      >["render"]
     >[0];
     editor: Parameters<
-      BlockConfig<Type, PSchema, ContainsInlineContent, BSchema>["render"]
+      BlockConfig<
+        Type,
+        PSchema,
+        CSchema,
+        ContainsInlineContent,
+        BSchema
+      >["render"]
     >[1];
   }>;
 };
@@ -73,11 +87,18 @@ export const InlineContent = <Tag extends ElementType>(
 export function createReactBlockSpec<
   BType extends string,
   PSchema extends PropSchema,
+  CSchema extends CustomSchema,
   ContainsInlineContent extends boolean,
   BSchema extends BlockSchema
 >(
-  blockConfig: ReactBlockConfig<BType, PSchema, ContainsInlineContent, BSchema>
-): BlockSpec<BType, PSchema> {
+  blockConfig: ReactBlockConfig<
+    BType,
+    PSchema,
+    CSchema,
+    ContainsInlineContent,
+    BSchema
+  >
+): BlockSpec<BType, PSchema, CustomSchema> {
   const node = createTipTapBlock<
     BType,
     {
@@ -122,7 +143,7 @@ export function createReactBlockSpec<
 
         // Gets BlockNote editor instance
         const editor = this.options.editor! as BlockNoteEditor<
-          BSchema & { [k in BType]: BlockSpec<BType, PSchema> }
+          BSchema & { [k in BType]: BlockSpec<BType, PSchema, CSchema> }
         >;
         // Gets position of the node
         const pos =
