@@ -36,11 +36,13 @@ const colorStyles = new Set<ColorStyle>(["textColor", "backgroundColor"]);
 function styledTextToNodes(styledText: StyledText, schema: Schema): Node[] {
   const marks: Mark[] = [];
 
-  for (const [style, value] of Object.entries(styledText.styles)) {
-    if (toggleStyles.has(style as ToggledStyle)) {
-      marks.push(schema.mark(style));
-    } else if (colorStyles.has(style as ColorStyle)) {
-      marks.push(schema.mark(style, { color: value }));
+  if (styledText.styles) {
+    for (const [style, value] of Object.entries(styledText.styles || {})) {
+      if (toggleStyles.has(style as ToggledStyle)) {
+        marks.push(schema.mark(style));
+      } else if (colorStyles.has(style as ColorStyle)) {
+        marks.push(schema.mark(style, { color: value }));
+      }
     }
   }
 
