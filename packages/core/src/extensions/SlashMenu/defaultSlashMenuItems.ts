@@ -35,7 +35,7 @@ export const getDefaultSlashMenuItems = <BSchema extends BlockSchema>(
     // Command for creating a level 1 heading
     if (schema.heading.propSchema.level.values?.includes("1")) {
       slashMenuItems.push({
-        name: "Heading",
+        name: "Heading 1",
         aliases: ["h", "heading1", "h1"],
         execute: (editor) =>
           insertOrUpdateBlock(editor, {
