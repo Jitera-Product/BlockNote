@@ -23,7 +23,7 @@ const extraFields: Record<
     keyof BaseSlashMenuItem<DefaultBlockSchema>
   >
 > = {
-  Heading: {
+  "Heading 1": {
     group: "Headings",
     icon: <RiH1 size={18} />,
     hint: "Used for a top-level heading",
