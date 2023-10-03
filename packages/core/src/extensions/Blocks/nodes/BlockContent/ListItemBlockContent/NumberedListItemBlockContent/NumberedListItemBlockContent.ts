@@ -30,13 +30,18 @@ export const NumberedListItemBlockContent =
         new InputRule({
           find: new RegExp(`^1\\.\\s$`),
           handler: ({ state, chain, range }) => {
-            chain()
-              .BNUpdateBlock(state.selection.from, {
-                type: "numberedListItem",
-                props: {},
-              })
-              // Removes the "1." characters used to set the list.
-              .deleteRange({ from: range.from, to: range.to });
+            if (
+              state.doc.resolve(range.from - 1).parent.firstChild?.type.name !==
+              "numberedListItem"
+            ) {
+              chain()
+                .BNUpdateBlock(state.selection.from, {
+                  type: "numberedListItem",
+                  props: {},
+                })
+                // Removes the "1." characters used to set the list.
+                .deleteRange({ from: range.from, to: range.to });
+            }
           },
         }),
       ];
