@@ -46,7 +46,9 @@
     "preview": "vite preview",
     "lint": "eslint src --max-warnings 0",
     "test": "vitest --run",
-    "test-watch": "vitest watch"
+    "test-watch": "vitest watch",
+    "start:watch": "nodemon --watch src --exec 'bun run build && yalc push --sig'",
+    "watch": "yalc push --sig"
   },
   "dependencies": {
     "@emotion/cache": "^11.10.5",
