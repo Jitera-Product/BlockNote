@@ -11,6 +11,8 @@ import { Plugin, PluginKey } from "prosemirror-state";
 
 export interface TrailingNodeOptions {
   node: string;
+  getTotalBlocks: () => number;
+  maxBlocksLimit: number;
 }
 
 /**
@@ -34,7 +36,10 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
           const endPosition = doc.content.size - 2;
           const type = schema.nodes["blockContainer"];
           const contentType = schema.nodes["paragraph"];
-          if (!shouldInsertNodeAtEnd) {
+          if (
+            !shouldInsertNodeAtEnd ||
+            this.options.getTotalBlocks() >= this.options.maxBlocksLimit
+          ) {
             return;
           }
 

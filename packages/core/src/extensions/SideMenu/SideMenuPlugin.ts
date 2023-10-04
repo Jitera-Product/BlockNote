@@ -11,6 +11,7 @@ import { Block, BlockSchema } from "../Blocks/api/blockTypes";
 import { getBlockInfoFromPos } from "../Blocks/helpers/getBlockInfoFromPos";
 import { slashMenuPluginKey } from "../SlashMenu/SlashMenuPlugin";
 import { MultipleNodeSelection } from "./MultipleNodeSelection";
+import { MAX_NUM_BLOCKS } from "../../shared/constants";
 
 const serializeForClipboard = (pv as any).__serializeForClipboard;
 // code based on https://github.com/ueberdosis/tiptap/issues/323#issuecomment-506637799
@@ -558,7 +559,12 @@ export class SideMenuProsemirrorPlugin<
   private sideMenuView: SideMenuView<BSchema> | undefined;
   public readonly plugin: Plugin;
 
-  constructor(private readonly editor: BlockNoteEditor<BSchema>) {
+  constructor(
+    private readonly editor: BlockNoteEditor<BSchema>,
+    private getTotalBlocks: () => number,
+    private maxBlocksLimit: number,
+    private errorCallback?: () => void
+  ) {
     super();
     this.plugin = new Plugin({
       key: sideMenuPluginKey,
@@ -583,7 +589,13 @@ export class SideMenuProsemirrorPlugin<
    * If the block is empty, opens the slash menu. If the block has content,
    * creates a new block below and opens the slash menu in it.
    */
-  addBlock = () => this.sideMenuView!.addBlock();
+  addBlock = () => {
+    if (this.getTotalBlocks() >= (this.maxBlocksLimit || MAX_NUM_BLOCKS)) {
+      this.errorCallback?.();
+      return;
+    }
+    this.sideMenuView!.addBlock();
+  };
 
   /**
    * Handles drag & drop events for blocks.

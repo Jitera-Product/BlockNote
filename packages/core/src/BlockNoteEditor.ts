@@ -51,6 +51,7 @@ import { getDefaultSlashMenuItems } from "./extensions/SlashMenu/defaultSlashMen
 import { UniqueID } from "./extensions/UniqueID/UniqueID";
 import { mergeCSSClasses } from "./shared/utils";
 import normalizeUrl from "normalize-url";
+import { MAX_NUM_BLOCKS } from "./shared/constants";
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
@@ -134,6 +135,10 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
 
   // tiptap options, undocumented
   _tiptapOptions: any;
+
+  maxBlocksLimit: number;
+
+  errorCallback?: () => void;
 };
 
 const blockNoteTipTapOptions = {
@@ -142,27 +147,57 @@ const blockNoteTipTapOptions = {
   enableCoreExtensions: false,
 };
 
-const MAX_NUM_LINES = 800;
-
 export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public readonly _tiptapEditor: TiptapEditor & { contentComponent: any };
   public blockCache = new WeakMap<Node, Block<BSchema>>();
   public readonly schema: BSchema;
   public ready = false;
-  public errorCallback = () => {}; // defined by whichever application is using the editor so we can customize the error handling logic
 
   public readonly sideMenu: SideMenuProsemirrorPlugin<BSchema>;
   public readonly formattingToolbar: FormattingToolbarProsemirrorPlugin<BSchema>;
   public readonly slashMenu: SlashMenuProsemirrorPlugin<BSchema, any>;
   public readonly hyperlinkToolbar: HyperlinkToolbarProsemirrorPlugin<BSchema>;
 
-  handleLinesLimit(slice: Slice): boolean {
+  handleBlocksLimit(slice: Slice): boolean {
+    const sliceTopLevelBlocks: Block<BSchema>[] = [];
+
+    slice.content?.firstChild?.descendants((node) => {
+      sliceTopLevelBlocks.push(nodeToBlock(node, this.schema, this.blockCache));
+      return false;
+    });
+
+    const blocks = sliceTopLevelBlocks.slice();
+
+    let count = 0;
+
+    const callback = (_block: Block<BSchema>) => {
+      count++;
+      return true;
+    };
+
+    function traverseBlockArray(blockArray: Block<BSchema>[]): boolean {
+      for (const block of blockArray) {
+        if (!callback(block)) {
+          return false;
+        }
+
+        const children = block.children;
+
+        if (!traverseBlockArray(children)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    traverseBlockArray(blocks);
+
     if (
-      (this._tiptapEditor.state.doc.firstChild?.childCount ?? 0) +
-        (slice.content.firstChild?.childCount ?? 0) >
-      MAX_NUM_LINES + 1
+      count + this.totalBlocks() >
+      (this.options.maxBlocksLimit || MAX_NUM_BLOCKS)
     ) {
-      this.errorCallback();
+      this.options.errorCallback?.();
       return true; // meaning new lines won't be added
     }
     return false;
@@ -186,7 +221,12 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       ...options,
     };
 
-    this.sideMenu = new SideMenuProsemirrorPlugin(this);
+    this.sideMenu = new SideMenuProsemirrorPlugin(
+      this,
+      this.totalBlocks.bind(this),
+      this.options.maxBlocksLimit || MAX_NUM_BLOCKS,
+      this.options.errorCallback
+    );
     this.formattingToolbar = new FormattingToolbarProsemirrorPlugin(this);
     this.slashMenu = new SlashMenuProsemirrorPlugin(
       this,
@@ -200,6 +240,8 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       domAttributes: newOptions.domAttributes || {},
       blockSchema: newOptions.blockSchema,
       collaboration: newOptions.collaboration,
+      getTotalBlocks: () => this.totalBlocks(),
+      maxBlocksLimit: newOptions.maxBlocksLimit || MAX_NUM_BLOCKS,
     });
 
     const blockNoteUIExtension = Extension.create({
@@ -278,17 +320,13 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
           ? newOptions._tiptapOptions?.extensions
           : [...(newOptions._tiptapOptions?.extensions || []), ...extensions],
       editorProps: {
-        handleDrop: (_view, _event, slice, _moved) => {
-          return this.handleLinesLimit(slice);
-        },
         handleKeyDown: (_view, event) => {
           if (event.key === "Enter") {
             if (
-              !this._tiptapEditor.state.doc.firstChild?.childCount ||
-              this._tiptapEditor.state.doc.firstChild?.childCount >=
-                MAX_NUM_LINES + 1
+              this.totalBlocks() >=
+              (this.options.maxBlocksLimit || MAX_NUM_BLOCKS)
             ) {
-              this.errorCallback();
+              this.options.errorCallback?.();
               return true; // meaning new lines won't be added
             }
           }
@@ -296,7 +334,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
         },
 
         handlePaste: (_view, _event, slice) => {
-          return this.handleLinesLimit(slice);
+          return this.handleBlocksLimit(slice);
         },
         attributes: {
           ...newOptions.domAttributes?.editor,
@@ -416,6 +454,15 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
     }
 
     traverseBlockArray(blocks);
+  }
+
+  public totalBlocks(): number {
+    let count = 0;
+    this.forEachBlock(() => {
+      count++;
+      return true;
+    });
+    return count;
   }
 
   /**
@@ -571,8 +618,17 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public insertBlocks(
     blocksToInsert: PartialBlock<BSchema>[],
     referenceBlock: BlockIdentifier,
-    placement: "before" | "after" | "nested" = "before"
+    placement: "before" | "after" | "nested" = "before",
+    checkBlocksLimit = false
   ): void {
+    if (checkBlocksLimit) {
+      if (
+        this.totalBlocks() >= (this.options.maxBlocksLimit || MAX_NUM_BLOCKS)
+      ) {
+        this.options.errorCallback?.();
+        return;
+      }
+    }
     insertBlocks(blocksToInsert, referenceBlock, placement, this._tiptapEditor);
   }
 
