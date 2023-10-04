@@ -18,6 +18,10 @@ function App() {
         "data-test": "editor",
       },
     },
+    maxBlocksLimit: 500,
+    errorCallback: () => {
+      alert("Max blocks reached");
+    },
   });
   const convertedBlocks: PartialBlock[] = [
     {

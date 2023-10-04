@@ -51,6 +51,8 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     provider: any;
     renderCursor?: (user: any) => HTMLElement;
   };
+  getTotalBlocks: () => number;
+  maxBlocksLimit: number;
 }) => {
   const CustomLink = Link.extend({
     inclusive: false,
@@ -116,7 +118,10 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     Dropcursor.configure({ width: 5, color: "#ddeeff" }),
     // This needs to be at the bottom of this list, because Key events (such as enter, when selecting a /command),
     // should be handled before Enter handlers in other components like splitListItem
-    TrailingNode,
+    TrailingNode.configure({
+      getTotalBlocks: opts.getTotalBlocks,
+      maxBlocksLimit: opts.maxBlocksLimit,
+    }),
   ];
 
   if (opts.collaboration) {
