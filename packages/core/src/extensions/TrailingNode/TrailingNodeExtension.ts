@@ -1,5 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
+import { Node } from "prosemirror-model";
 
 // based on https://github.com/ueberdosis/tiptap/blob/40a9404c94c7fef7900610c195536384781ae101/demos/src/Experiments/TrailingNode/Vue/trailing-node.ts
 
@@ -13,6 +14,8 @@ export interface TrailingNodeOptions {
   node: string;
   getTotalBlocks: () => number;
   maxBlocksLimit: number;
+  isWholeDocEmpty: () => boolean;
+  countBlocks: (node: Node | null) => number;
 }
 
 /**
@@ -38,7 +41,9 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
           const contentType = schema.nodes["paragraph"];
           if (
             !shouldInsertNodeAtEnd ||
-            this.options.getTotalBlocks() >= this.options.maxBlocksLimit
+            this.options.getTotalBlocks() >= this.options.maxBlocksLimit ||
+            this.options.countBlocks(doc.firstChild) >=
+              this.options.maxBlocksLimit
           ) {
             return;
           }
