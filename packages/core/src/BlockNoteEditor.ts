@@ -1,5 +1,5 @@
 import { Editor, EditorOptions, Extension } from "@tiptap/core";
-import { Node, Slice } from "prosemirror-model";
+import { Fragment, Node, Slice } from "prosemirror-model";
 // import "./blocknote.css";
 import { Editor as TiptapEditor } from "@tiptap/core/dist/packages/core/src/Editor";
 import * as Y from "yjs";
@@ -158,11 +158,41 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public readonly slashMenu: SlashMenuProsemirrorPlugin<BSchema, any>;
   public readonly hyperlinkToolbar: HyperlinkToolbarProsemirrorPlugin<BSchema>;
 
-  handleBlocksLimit(slice: Slice): boolean {
+  isWholeDocEmpty() {
+    let isWholeDocEmpty = true;
+    if (
+      this._tiptapEditor.state.doc.firstChild?.childCount &&
+      this._tiptapEditor.state.doc.firstChild?.childCount > 1
+    ) {
+      isWholeDocEmpty = false;
+    } else {
+      this._tiptapEditor.state.doc.firstChild?.descendants((node) => {
+        if (node.type.name !== "blockContainer") {
+          return;
+        }
+        const bnNode = nodeToBlock(node, this.schema, this.blockCache);
+        if (bnNode.content.length > 0) {
+          isWholeDocEmpty = false;
+        }
+      });
+    }
+
+    return isWholeDocEmpty;
+  }
+
+  countBlocks(node: Node | null): number {
+    if (!node) {
+      return 0;
+    }
     const sliceTopLevelBlocks: Block<BSchema>[] = [];
 
-    slice.content?.firstChild?.descendants((node) => {
-      sliceTopLevelBlocks.push(nodeToBlock(node, this.schema, this.blockCache));
+    node.descendants((_node) => {
+      if (_node.type.name !== "blockContainer") {
+        return;
+      }
+      sliceTopLevelBlocks.push(
+        nodeToBlock(_node, this.schema, this.blockCache)
+      );
       return false;
     });
 
@@ -193,11 +223,48 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
 
     traverseBlockArray(blocks);
 
+    return count;
+  }
+
+  handleBlocksLimit(slice: Slice): boolean {
+    const sliceBlocksCount = this.countBlocks(slice.content.firstChild);
+    const isWholeDocEmpty = this.isWholeDocEmpty();
+
     if (
-      count + this.totalBlocks() >
-      (this.options.maxBlocksLimit || MAX_NUM_BLOCKS)
+      !(
+        isWholeDocEmpty &&
+        sliceBlocksCount <= (this.options.maxBlocksLimit || MAX_NUM_BLOCKS)
+      ) &&
+      sliceBlocksCount + this.totalBlocks() >
+        (this.options.maxBlocksLimit || MAX_NUM_BLOCKS)
     ) {
       this.options.errorCallback?.();
+
+      let count = 0;
+      let fragment = Fragment.empty;
+
+      const limit =
+        (this.options.maxBlocksLimit || MAX_NUM_BLOCKS) - this.totalBlocks();
+
+      slice.content.descendants((node) => {
+        if (node.type.name !== "blockContainer") {
+          return;
+        }
+
+        if (count < limit) {
+          fragment = fragment.append(Fragment.from(node));
+        }
+
+        count++;
+      });
+
+      if (count > 0) {
+        this._tiptapEditor.view.dispatch(
+          this._tiptapEditor.state.tr.replaceSelection(
+            new Slice(fragment, 0, 0)
+          )
+        );
+      }
       return true; // meaning new lines won't be added
     }
     return false;
@@ -242,6 +309,8 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       collaboration: newOptions.collaboration,
       getTotalBlocks: () => this.totalBlocks(),
       maxBlocksLimit: newOptions.maxBlocksLimit || MAX_NUM_BLOCKS,
+      isWholeDocEmpty: () => this.isWholeDocEmpty(),
+      countBlocks: (node: Node | null) => this.countBlocks.bind(this)(node),
     });
 
     const blockNoteUIExtension = Extension.create({

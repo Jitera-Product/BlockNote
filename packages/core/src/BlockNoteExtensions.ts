@@ -34,6 +34,7 @@ import { TrailingNode } from "./extensions/TrailingNode/TrailingNodeExtension";
 import UniqueID from "./extensions/UniqueID/UniqueID";
 import { BlockContainerCustomPropsExtension } from "./extensions/Blocks/custom/BlockContainerCustomPropsExtension";
 import { CustomContentPropsMark } from "./extensions/CustomMark/CustomMark";
+import { Node } from "prosemirror-model";
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -53,6 +54,8 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
   };
   getTotalBlocks: () => number;
   maxBlocksLimit: number;
+  isWholeDocEmpty: () => boolean;
+  countBlocks: (node: Node | null) => number;
 }) => {
   const CustomLink = Link.extend({
     inclusive: false,
@@ -121,6 +124,8 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     TrailingNode.configure({
       getTotalBlocks: opts.getTotalBlocks,
       maxBlocksLimit: opts.maxBlocksLimit,
+      isWholeDocEmpty: opts.isWholeDocEmpty,
+      countBlocks: opts.countBlocks,
     }),
   ];
 
