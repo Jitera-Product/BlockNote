@@ -16,9 +16,12 @@ export const TextColorMark = Mark.create({
       color: {
         default: undefined,
         parseHTML: (element) => element.getAttribute("data-text-color"),
-        renderHTML: (attributes) => ({
-          "data-text-color": attributes.color,
-        }),
+        renderHTML: (attributes) => {
+          return {
+            "data-text-color": attributes.color,
+            "data-underline-color": attributes.color,
+          };
+        },
       },
     };
   },

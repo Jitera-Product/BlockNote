@@ -60,14 +60,14 @@ NESTED BLOCKS
   .blockGroup
   .blockGroup
   > .blockOuter:not([data-prev-depth-changed])::before {
-  border-left: 1px solid #AFAFAF;
+  border-left: 1px solid #afafaf;
 }
 
 [data-theme="dark"]
   .blockGroup
   .blockGroup
   > .blockOuter:not([data-prev-depth-changed])::before {
-  border-left: 1px solid #7F7F7F;
+  border-left: 1px solid #7f7f7f;
 }
 
 .blockGroup .blockGroup > .blockOuter[data-prev-depth-change="-2"]::before {
@@ -250,12 +250,12 @@ NESTED BLOCKS
 
 [data-theme="light"] .isEmpty .inlineContent:before,
 .isFilter .inlineContent:before {
-  color: #CFCFCF;
+  color: #cfcfcf;
 }
 
 [data-theme="dark"] .isEmpty .inlineContent:before,
 .isFilter .inlineContent:before {
-  color: #7F7F7F;
+  color: #7f7f7f;
 }
 
 /* TODO: would be nicer if defined from code */
@@ -274,7 +274,7 @@ NESTED BLOCKS
 
 .blockContent[data-content-type="bulletListItem"].isEmpty .inlineContent:before,
 .blockContent[data-content-type="numberedListItem"].isEmpty
-.inlineContent:before {
+  .inlineContent:before {
   content: "List";
 }
 
@@ -313,6 +313,52 @@ NESTED BLOCKS
 
 [data-text-color="pink"] {
   color: #ad1a72;
+}
+
+/* UNDERLINE COLORS */
+[data-underline-color="gray"] {
+  text-decoration: underline;
+  text-decoration-color: #9b9a97;
+}
+
+[data-underline-color="brown"] {
+  text-decoration: underline;
+  text-decoration-color: #64473a;
+}
+
+[data-underline-color="red"] {
+  text-decoration: underline;
+  text-decoration-color: #e03e3e;
+}
+
+[data-underline-color="orange"] {
+  text-decoration: underline;
+  text-decoration-color: #d9730d;
+}
+
+[data-underline-color="yellow"] {
+  text-decoration: underline;
+  text-decoration-color: #dfab01;
+}
+
+[data-underline-color="green"] {
+  text-decoration: underline;
+  text-decoration-color: #4d6461;
+}
+
+[data-underline-color="blue"] {
+  text-decoration: underline;
+  text-decoration-color: #0b6e99;
+}
+
+[data-underline-color="purple"] {
+  text-decoration: underline;
+  text-decoration-color: #6940a5;
+}
+
+[data-underline-color="pink"] {
+  text-decoration: underline;
+  text-decoration-color: #ad1a72;
 }
 
 /* BACKGROUND COLORS */

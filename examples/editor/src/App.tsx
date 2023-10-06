@@ -66,7 +66,11 @@ function App() {
         {
           type: "text",
           text: "Untitled",
-          styles: {},
+          styles: {
+            underline: true,
+            textColor: "red",
+          },
+
           customContentProps: {
             anything: "abc",
           },
