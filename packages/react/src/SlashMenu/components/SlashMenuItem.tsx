@@ -10,6 +10,12 @@ export type SlashMenuItemProps = {
   shortcut?: string;
   isSelected: boolean;
   set: () => void;
+  setRemoveHighlightCallback?: (
+    removeHighlight: () => void,
+    index: number
+  ) => void;
+  index: number;
+  removeHighlights: (exclude: number) => void;
 };
 
 export function SlashMenuItem(props: SlashMenuItemProps) {
@@ -29,10 +35,40 @@ export function SlashMenuItem(props: SlashMenuItemProps) {
   // Updates HTML "data-hovered" attribute which Mantine uses to set mouse hover styles.
   // Allows users to "hover" menu items when navigating using the keyboard.
   function updateSelection() {
-    isSelected()
-      ? itemRef.current?.setAttribute("data-hovered", "true")
-      : itemRef.current?.removeAttribute("data-hovered");
+    if (isSelected()) {
+      itemRef.current?.setAttribute("data-hovered", "true");
+    } else {
+      itemRef.current?.removeAttribute("data-hovered");
+    }
   }
+
+  function removeHighlight() {
+    itemRef.current?.removeAttribute("data-hovered");
+  }
+
+  useEffect(() => {
+    if (props.setRemoveHighlightCallback) {
+      props.setRemoveHighlightCallback(removeHighlight, props.index);
+    }
+
+    const tempItemRef = itemRef.current;
+
+    const handleMouseEnter = () => {
+      if (props.removeHighlights) {
+        props.removeHighlights(props.index);
+      }
+    };
+
+    if (tempItemRef) {
+      itemRef.current.addEventListener("mouseenter", handleMouseEnter);
+    }
+
+    return () => {
+      if (tempItemRef) {
+        tempItemRef?.removeEventListener("mouseenter", handleMouseEnter);
+      }
+    };
+  }, [props.index, props.removeHighlights, props.setRemoveHighlightCallback]);
 
   useEffect(() => {
     // Updates whether the item is selected with the keyboard (triggered on selectedIndex prop change).
