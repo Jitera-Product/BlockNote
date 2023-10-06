@@ -4,6 +4,9 @@ import * as _ from "lodash";
 import { SlashMenuItem } from "./SlashMenuItem";
 import { SlashMenuProps } from "./SlashMenuPositioner";
 import { BlockSchema } from "@blocknote/core";
+import { useCallback, useEffect, useMemo } from "react";
+
+type RemoveHighlightCallback = () => void;
 
 export function DefaultSlashMenu<BSchema extends BlockSchema>(
   props: SlashMenuProps<BSchema>
@@ -15,6 +18,31 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
   let index = 0;
 
   const groups = _.groupBy(props.filteredItems, (i) => i.group);
+
+  const removeHighlightCallbacks: Record<number, RemoveHighlightCallback> =
+    useMemo(() => ({}), []);
+
+  const setRemoveHighlightCallback = (
+    removeHighlightFunction: RemoveHighlightCallback,
+    _index: number
+  ) => {
+    removeHighlightCallbacks[_index] = removeHighlightFunction;
+  };
+
+  const removeHighlights = useCallback(
+    (exclude: number) => {
+      _.forEach(removeHighlightCallbacks, (removeHighlight, _index) => {
+        if (_index !== exclude.toString()) {
+          removeHighlight();
+        }
+      });
+    },
+    [removeHighlightCallbacks]
+  );
+
+  useEffect(() => {
+    removeHighlights(props.keyboardHoveredItemIndex);
+  }, [props.keyboardHoveredItemIndex, removeHighlights]);
 
   _.forEach(groups, (groupedItems) => {
     renderedItems.push(
@@ -32,7 +60,10 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
           hint={item.hint}
           shortcut={item.shortcut}
           isSelected={props.keyboardHoveredItemIndex === index}
+          index={index}
           set={() => props.itemCallback(item)}
+          setRemoveHighlightCallback={setRemoveHighlightCallback}
+          removeHighlights={removeHighlights}
         />
       );
       index++;
