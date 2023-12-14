@@ -35,7 +35,7 @@ Play with the editor @ [https://blocknote-main.vercel.app/](https://blocknote-ma
 
 ```typescript
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 function App() {
   const editor = useBlockNote({
@@ -51,7 +51,7 @@ function App() {
 
 `@blocknote/react` comes with a fully styled UI that makes it an instant, polished editor ready to use in your app.
 
-If you prefer to create your own UI components (menus), or don't want to use React, you can use `@blocknote/core` (_advanced_, [see docs](https://www.blocknotejs.org/docs/vanilla-js)).
+If you prefer to create your own UI components (menus), or don't want to use React, you can use `@jitera/blocknote-core` (_advanced_, [see docs](https://www.blocknotejs.org/docs/vanilla-js)).
 
 # Features
 

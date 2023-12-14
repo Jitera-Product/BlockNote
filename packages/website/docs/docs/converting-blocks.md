@@ -7,7 +7,7 @@ path: /docs/converting-blocks
 
 <script setup>
 import { useData } from 'vitepress';
-import { getTheme, getStyles } from "./demoUtils";
+import { getTheme, getStyles } from "../demoUtils";
 
 const { isDark } = useData();
 </script>
@@ -34,12 +34,12 @@ BlockNote can import / export Blocks to and from Markdown. Note that this is als
 // Definition
 class BlockNoteEditor {
 ...
-  public blocksToMarkdown(blocks: Block[]): string;
+  public blocksToMarkdownLossy(blocks: Block[]): string;
 ...
 }
 
 // Usage
-const markdownFromBlocks = editor.blocksToMarkdown(blocks);
+const markdownFromBlocks = editor.blocksToMarkdownLossy(blocks);
 ```
 
 `returns:` The blocks, serialized as a Markdown string.
@@ -52,9 +52,9 @@ The output is simplified as Markdown does not support all features of BlockNote 
 
 ```typescript-vue /App.tsx
 import { useState } from "react";
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 export default function App() {
   // Stores the editor's contents as Markdown.
@@ -64,17 +64,17 @@ export default function App() {
   const editor: BlockNoteEditor = useBlockNote({
     // Listens for when the editor's contents change.
     onEditorContentChange: (editor) => {
-      // Converts the editor's contents from Block objects to Markdown and 
+      // Converts the editor's contents from Block objects to Markdown and
       // saves them.
       const saveBlocksAsMarkdown = async () => {
-        const markdown: string = 
-          await editor.blocksToMarkdown(editor.topLevelBlocks);
+        const markdown: string =
+          await editor.blocksToMarkdownLossy(editor.topLevelBlocks);
         setMarkdown(markdown);
       };
       saveBlocksAsMarkdown();
     }
   });
-  
+
   // Renders the editor instance, and its contents as Markdown below.
   return (
     <div>
@@ -96,7 +96,7 @@ pre {
 
 :::
 
-### Converting Markdown to Blocks
+### Parsing Markdown to Blocks
 
 `Block` objects can be parsed from a Markdown string using the following function:
 
@@ -104,12 +104,12 @@ pre {
 // Definition
 class BlockNoteEditor {
 ...
-  public markdownToBlocks(markdown: string): Blocks[];
+  public tryParseMarkdownToBlocks(markdown: string): Blocks[];
 ...
 }
 
 // Usage
-const blocksFromMarkdown = editor.markdownToBlocks(markdown);
+const blocksFromMarkdown = editor.tryParseMarkdownToBlocks(markdown);
 ```
 
 `returns:` The blocks parsed from the Markdown string.
@@ -122,14 +122,14 @@ Tries to create `Block` and `InlineNode` objects based on Markdown syntax, thoug
 
 ```typescript-vue /App.tsx
 import { useEffect, useState } from "react";
-import { BlockNoteEditor, Block } from "@blocknote/core";
+import { BlockNoteEditor, Block } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 export default function App() {
   // Stores the current Markdown content.
   const [markdown, setMarkdown] = useState<string>("");
-  
+
   // Creates a new editor instance.
   const editor: BlockNoteEditor = useBlockNote({
     // Makes the editor non-editable.
@@ -141,7 +141,7 @@ export default function App() {
       // Whenever the current Markdown content changes, converts it to an array
       // of Block objects and replaces the editor's content with them.
       const getBlocks = async () => {
-        const blocks: Block[] = await editor.markdownToBlocks(markdown);
+        const blocks: Block[] = await editor.tryParseMarkdownToBlocks(markdown);
         editor.replaceBlocks(editor.topLevelBlocks, blocks);
       };
       getBlocks();
@@ -181,21 +181,21 @@ We expose functions to convert Blocks to and from HTML. Converting Blocks to HTM
 
 ### Converting Blocks to HTML
 
-`Block` objects can be serialized to an HTML string using the following function:
+`Block` objects can be exported to an HTML string using the following function:
 
 ```typescript
 // Definition
 class BlockNoteEditor {
 ...
-  public blocksToHTML(blocks: Block[]): string;
+  public blocksToHTMLLossy(blocks: Block[]): string;
 ...
 }
 
 // Usage
-const HTMLFromBlocks = editor.blocksToHTML(blocks);
+const HTMLFromBlocks = editor.blocksToHTMLLossy(blocks);
 ```
 
-`returns:` The blocks, serialized as an HTML string.
+`returns:` The blocks, exported to an HTML string.
 
 To better conform to HTML standards, children of blocks which aren't list items are un-nested in the output HTML.
 
@@ -205,9 +205,9 @@ To better conform to HTML standards, children of blocks which aren't list items 
 
 ```typescript-vue /App.tsx
 import { useState } from "react";
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 export default function App() {
   // Stores the editor's contents as HTML.
@@ -217,10 +217,10 @@ export default function App() {
   const editor: BlockNoteEditor = useBlockNote({
     // Listens for when the editor's contents change.
     onEditorContentChange: (editor) => {
-      // Converts the editor's contents from Block objects to HTML and saves 
+      // Converts the editor's contents from Block objects to HTML and saves
       // them.
       const saveBlocksAsHTML = async () => {
-        const html: string = await editor.blocksToHTML(editor.topLevelBlocks);
+        const html: string = await editor.blocksToHTMLLossy(editor.topLevelBlocks);
         setHTML(html);
       };
       saveBlocksAsHTML();
@@ -248,7 +248,7 @@ pre {
 
 :::
 
-### Converting HTML to Blocks
+### Parsing HTML to Blocks
 
 `Block` objects can be parsed from an HTML string using the following function:
 
@@ -256,12 +256,12 @@ pre {
 // Definition
 class BlockNoteEditor {
 ...
-  public HTMLToBlocks(html: string): Blocks[];
+  public tryParseHTMLToBlocks(html: string): Blocks[];
 ...
 }
 
 // Usage
-const blocksFromHTML = editor.HTMLToBlocks(html);
+const blocksFromHTML = editor.tryParseHTMLToBlocks(html);
 ```
 
 `returns:` The blocks parsed from the HTML string.
@@ -274,14 +274,14 @@ Tries to create `Block` objects out of any HTML block-level elements, and `Inlin
 
 ```typescript-vue /App.tsx
 import { useEffect, useState } from "react";
-import { BlockNoteEditor, Block } from "@blocknote/core";
+import { BlockNoteEditor, Block } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 export default function App() {
   // Stores the current HTML content.
   const [html, setHTML] = useState<string>("");
-  
+
   // Creates a new editor instance.
   const editor: BlockNoteEditor = useBlockNote({
     // Makes the editor non-editable.
@@ -290,10 +290,10 @@ export default function App() {
 
   useEffect(() => {
     if (editor) {
-      // Whenever the current HTML content changes, converts it to an array of 
+      // Whenever the current HTML content changes, converts it to an array of
       // Block objects and replaces the editor's content with them.
       const getBlocks = async () => {
-        const blocks: Block[] = await editor.HTMLToBlocks(html);
+        const blocks: Block[] = await editor.tryParseHTMLToBlocks(html);
         editor.replaceBlocks(editor.topLevelBlocks, blocks);
       };
       getBlocks();

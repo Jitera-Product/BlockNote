@@ -7,7 +7,7 @@ path: /docs/slash-menu
 
 <script setup>
 import { useData } from 'vitepress';
-import { getTheme, getStyles } from "./demoUtils";
+import { getTheme, getStyles } from "../demoUtils";
 
 const { isDark } = useData();
 </script>
@@ -27,14 +27,14 @@ You can see how this is done in the example below, which has a custom Slash Menu
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { Block, BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { Block, BlockNoteEditor, PartialBlock } from "@jitera/blocknote-core";
 import {
   BlockNoteView,
   getDefaultReactSlashMenuItems,
   ReactSlashMenuItem,
   useBlockNote,
 } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
 
 // Command to insert "Hello World" in bold in a new block below.
@@ -77,7 +77,6 @@ export default function App() {
   // Renders the editor instance.
   return <BlockNoteView editor={editor} theme={"{{ getTheme(isDark) }}"} />;
 }
-
 ```
 
 ```css-vue /styles.css [hidden]
@@ -103,10 +102,10 @@ import {
   ReactSlashMenuItem,
   useBlockNote
 } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 function App() {
-  const newSlashMenuItems: ReactSlashMenuItem[] = 
+  const newSlashMenuItems: ReactSlashMenuItem[] =
     getDefaultReactSlashMenuItems();
 
   // Edit newSlashMenuItems

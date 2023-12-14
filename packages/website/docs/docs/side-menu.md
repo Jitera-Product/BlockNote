@@ -7,7 +7,7 @@ path: /docs/side-menu
 
 <script setup>
 import { useData } from 'vitepress';
-import { getTheme, getStyles } from "./demoUtils"; 
+import { getTheme, getStyles } from "../demoUtils"; 
 import {ref} from "vue"; 
 
 const { isDark } = useData();
@@ -32,7 +32,7 @@ You can see how this is done in the example below, which has a custom Side Menu 
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import {
   BlockNoteView,
   DragHandle,
@@ -45,7 +45,7 @@ import {
   SlashMenuPositioner,
   useBlockNote,
 } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 import { MdDelete } from "react-icons/md";
 
 const CustomSideMenu = (props: SideMenuProps) => (
@@ -95,7 +95,7 @@ You can see how this is done in the example below, which has a custom Drag Handl
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { Block, BlockNoteEditor } from "@blocknote/core";
+import { Block, BlockNoteEditor } from "@jitera/blocknote-core";
 import {
   BlockNoteView,
   DefaultSideMenu,
@@ -108,7 +108,7 @@ import {
   SlashMenuPositioner,
   useBlockNote,
 } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 const CustomDragHandleMenu = (props: {
   editor: BlockNoteEditor;
@@ -177,6 +177,7 @@ type SideMenuButtonProps = {
 }
 export const SideMenuButton = (props: SideMenuButtonProps) => ...;
 
-// Takes same props as `button` elements, e.g. onClick.
-export const DragHandleMenuItem = (props) => ...;
+// Contains all props that a regular button element would take, as well as all props from the Mantine `Menu.Item` component.
+type DragHandleMenuItemProps = PolymorphicComponentProps<"button"> & MenuItemProps
+export const DragHandleMenuItem = (props: DragHandleMenuItemProps) => ...;
 ```

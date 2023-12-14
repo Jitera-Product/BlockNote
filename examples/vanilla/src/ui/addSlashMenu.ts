@@ -2,15 +2,15 @@ import {
   BaseSlashMenuItem,
   BlockNoteEditor,
   DefaultBlockSchema,
-} from "@blocknote/core";
+} from "@jitera/blocknote-core";
 import { createButton } from "./util";
 
 export const addSlashMenu = (editor: BlockNoteEditor) => {
   let element: HTMLElement;
 
   function updateItems(
-    items: BaseSlashMenuItem<DefaultBlockSchema>[],
-    onClick: (item: BaseSlashMenuItem<DefaultBlockSchema>) => void,
+    items: BaseSlashMenuItem<DefaultBlockSchema, any, any>[],
+    onClick: (item: BaseSlashMenuItem<DefaultBlockSchema, any, any>) => void,
     selected: number
   ) {
     element.innerHTML = "";

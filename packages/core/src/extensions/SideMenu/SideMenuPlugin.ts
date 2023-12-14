@@ -1,29 +1,36 @@
 import { PluginView } from "@tiptap/pm/state";
 import { Node } from "prosemirror-model";
 import { NodeSelection, Plugin, PluginKey, Selection } from "prosemirror-state";
-import * as pv from "prosemirror-view";
 import { EditorView } from "prosemirror-view";
-import { BlockNoteEditor } from "../../BlockNoteEditor";
-import styles from "../../editor.module.css";
-import { BaseUiElementState } from "../../shared/BaseUiElementTypes";
-import { EventEmitter } from "../../shared/EventEmitter";
-import { Block, BlockSchema } from "../Blocks/api/blockTypes";
-import { getBlockInfoFromPos } from "../Blocks/helpers/getBlockInfoFromPos";
+import { createExternalHTMLExporter } from "../../api/exporters/html/externalHTMLExporter";
+import { createInternalHTMLSerializer } from "../../api/exporters/html/internalHTMLSerializer";
+import { cleanHTMLToMarkdown } from "../../api/exporters/markdown/markdownExporter";
+import { getBlockInfoFromPos } from "../../api/getBlockInfoFromPos";
+import type { BlockNoteEditor } from "../../editor/BlockNoteEditor";
+import { BaseUiElementState } from "../../extensions-shared/BaseUiElementTypes";
+import {
+  Block,
+  BlockSchema,
+  InlineContentSchema,
+  StyleSchema,
+} from "../../schema";
+import { EventEmitter } from "../../util/EventEmitter";
 import { slashMenuPluginKey } from "../SlashMenu/SlashMenuPlugin";
 import { MultipleNodeSelection } from "./MultipleNodeSelection";
-import { MAX_NUM_BLOCKS } from "../../shared/constants";
-
-const serializeForClipboard = (pv as any).__serializeForClipboard;
-// code based on https://github.com/ueberdosis/tiptap/issues/323#issuecomment-506637799
+import { MAX_NUM_BLOCKS } from "../../util/constants";
 
 let dragImageElement: Element | undefined;
 
-export type SideMenuState<BSchema extends BlockSchema> = BaseUiElementState & {
+export type SideMenuState<
+  BSchema extends BlockSchema,
+  I extends InlineContentSchema,
+  S extends StyleSchema
+> = BaseUiElementState & {
   // The block that the side menu is attached to.
-  block: Block<BSchema>;
+  block: Block<BSchema, I, S>;
 };
 
-function getDraggableBlockFromCoords(
+export function getDraggableBlockFromCoords(
   coords: { left: number; top: number },
   view: EditorView
 ) {
@@ -154,18 +161,14 @@ function setDragImage(view: EditorView, from: number, to = from) {
   const inheritedClasses = classes
     .filter(
       (className) =>
-        !className.includes("bn") &&
-        !className.includes("ProseMirror") &&
-        !className.includes("editor")
+        className !== "ProseMirror" &&
+        className !== "bn-root" &&
+        className !== "bn-editor"
     )
     .join(" ");
 
   dragImageElement.className =
-    dragImageElement.className +
-    " " +
-    styles.dragPreview +
-    " " +
-    inheritedClasses;
+    dragImageElement.className + " bn-drag-preview " + inheritedClasses;
 
   document.body.appendChild(dragImageElement);
 }
@@ -177,13 +180,19 @@ function unsetDragImage() {
   }
 }
 
-function dragStart(
+function dragStart<
+  BSchema extends BlockSchema,
+  I extends InlineContentSchema,
+  S extends StyleSchema
+>(
   e: { dataTransfer: DataTransfer | null; clientY: number },
-  view: EditorView
+  editor: BlockNoteEditor<BSchema, I, S>
 ) {
   if (!e.dataTransfer) {
     return;
   }
+
+  const view = editor.prosemirrorView;
 
   const editorBoundingBox = view.dom.getBoundingClientRect();
 
@@ -216,20 +225,38 @@ function dragStart(
       setDragImage(view, pos);
     }
 
-    const slice = view.state.selection.content();
-    const { dom, text } = serializeForClipboard(view, slice);
+    const selectedSlice = view.state.selection.content();
+    const schema = editor._tiptapEditor.schema;
+
+    const internalHTMLSerializer = createInternalHTMLSerializer(schema, editor);
+    const internalHTML = internalHTMLSerializer.serializeProseMirrorFragment(
+      selectedSlice.content
+    );
+
+    const externalHTMLExporter = createExternalHTMLExporter(schema, editor);
+    const externalHTML = externalHTMLExporter.exportProseMirrorFragment(
+      selectedSlice.content
+    );
+
+    const plainText = cleanHTMLToMarkdown(externalHTML);
 
     e.dataTransfer.clearData();
-    e.dataTransfer.setData("text/html", dom.innerHTML);
-    e.dataTransfer.setData("text/plain", text);
+    e.dataTransfer.setData("blocknote/html", internalHTML);
+    e.dataTransfer.setData("text/html", externalHTML);
+    e.dataTransfer.setData("text/plain", plainText);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setDragImage(dragImageElement!, 0, 0);
-    view.dragging = { slice, move: true };
+    view.dragging = { slice: selectedSlice, move: true };
   }
 }
 
-export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
-  private sideMenuState?: SideMenuState<BSchema>;
+export class SideMenuView<
+  BSchema extends BlockSchema,
+  I extends InlineContentSchema,
+  S extends StyleSchema
+> implements PluginView
+{
+  private sideMenuState?: SideMenuState<BSchema, I, S>;
 
   // When true, the drag handle with be anchored at the same level as root elements
   // When false, the drag handle with be just to the left of the element
@@ -245,10 +272,10 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
   public menuFrozen = false;
 
   constructor(
-    private readonly editor: BlockNoteEditor<BSchema>,
+    private readonly editor: BlockNoteEditor<BSchema, I, S>,
     private readonly pmView: EditorView,
     private readonly updateSideMenu: (
-      sideMenuState: SideMenuState<BSchema>
+      sideMenuState: SideMenuState<BSchema, I, S>
     ) => void
   ) {
     this.horizontalPosAnchoredAtRoot = true;
@@ -270,6 +297,8 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     // Makes menu scroll with the page.
     document.addEventListener("scroll", this.onScroll);
 
+    // Unfreezes the menu whenever the user clicks anywhere.
+    document.body.addEventListener("mousedown", this.onMouseDown, true);
     // Hides and unfreezes the menu whenever the user presses a key.
     document.body.addEventListener("keydown", this.onKeyDown, true);
   }
@@ -351,6 +380,22 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     }
     this.menuFrozen = false;
   };
+
+  onMouseDown = (_event: MouseEvent) => {
+    if (this.sideMenuState && !this.sideMenuState.show) {
+      this.sideMenuState.show = true;
+      this.updateSideMenu(this.sideMenuState);
+    }
+    this.menuFrozen = false;
+  };
+
+  // onMouseDown() {
+  //   if (this.sideMenuState) {
+  //     this.sideMenuState.show = true;
+  //     this.updateSideMenu(this.sideMenuState);
+  //     this.menuFrozen = false;
+  //   }
+  // }
 
   onMouseMove = (event: MouseEvent) => {
     if (this.menuFrozen) {
@@ -484,6 +529,7 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     this.pmView.dom.removeEventListener("dragstart", this.onDragStart);
     document.body.removeEventListener("drop", this.onDrop, true);
     document.removeEventListener("scroll", this.onScroll);
+    document.body.removeEventListener("mousedown", this.onMouseDown, true);
     document.body.removeEventListener("keydown", this.onKeyDown, true);
   }
 
@@ -542,25 +588,27 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     );
   }
 
-  onMouseDown() {
-    if (this.sideMenuState) {
-      this.sideMenuState.show = true;
-      this.updateSideMenu(this.sideMenuState);
-      this.menuFrozen = false;
-    }
-  }
+  // onMouseDown() {
+  //   if (this.sideMenuState) {
+  //     this.sideMenuState.show = true;
+  //     this.updateSideMenu(this.sideMenuState);
+  //     this.menuFrozen = false;
+  //   }
+  // }
 }
 
 export const sideMenuPluginKey = new PluginKey("SideMenuPlugin");
 
 export class SideMenuProsemirrorPlugin<
-  BSchema extends BlockSchema
+  BSchema extends BlockSchema,
+  I extends InlineContentSchema,
+  S extends StyleSchema
 > extends EventEmitter<any> {
-  private sideMenuView: SideMenuView<BSchema> | undefined;
+  private sideMenuView: SideMenuView<BSchema, I, S> | undefined;
   public readonly plugin: Plugin;
 
   constructor(
-    private readonly editor: BlockNoteEditor<BSchema>,
+    private readonly editor: BlockNoteEditor<BSchema, I, S>,
     private getTotalBlocks: () => number,
     private maxBlocksLimit: number,
     private errorCallback?: () => void
@@ -575,13 +623,13 @@ export class SideMenuProsemirrorPlugin<
           (sideMenuState) => {
             this.emit("update", sideMenuState);
           }
-        );
-        return this.sideMenuView;
+        ) as any;
+        return this.sideMenuView!;
       },
     });
   }
 
-  public onUpdate(callback: (state: SideMenuState<BSchema>) => void) {
+  public onUpdate(callback: (state: SideMenuState<BSchema, I, S>) => void) {
     return this.on("update", callback);
   }
 
@@ -605,7 +653,7 @@ export class SideMenuProsemirrorPlugin<
     clientY: number;
   }) => {
     this.sideMenuView!.isDragging = true;
-    dragStart(event, this.editor.prosemirrorView);
+    dragStart(event, this.editor);
   };
 
   /**
