@@ -68,6 +68,7 @@ export function SlashMenuItem(props: SlashMenuItemProps) {
         tempItemRef?.removeEventListener("mouseenter", handleMouseEnter);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.index, props.removeHighlights, props.setRemoveHighlightCallback]);
 
   useEffect(() => {
