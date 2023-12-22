@@ -48,11 +48,6 @@ export function App() {
         backgroundColor: "red",
         textAlignment: "left",
       },
-      customProps: {
-        properties: {
-          category: "specification",
-        },
-      },
       children: [],
     },
     {
@@ -72,17 +67,12 @@ export function App() {
         backgroundColor: "red",
         textAlignment: "left",
       },
-      customProps: {
-        properties: {
-          parent_id: "29",
-        },
-      },
       children: [],
     },
   ];
 
   useEffect(() => {
-    editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks);
+    editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks as any);
     console.log(editor.topLevelBlocks);
   }, []);
 
