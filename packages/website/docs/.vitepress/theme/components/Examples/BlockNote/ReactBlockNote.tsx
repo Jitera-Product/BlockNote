@@ -1,4 +1,5 @@
-import "@blocknote/core/style.css";
+import { uploadToTmpFilesDotOrg_DEV_ONLY } from "@jitera/blocknote-core";
+import "@jitera/blocknote-core/style.css";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import { useEffect, useMemo } from "react";
 import YPartyKitProvider from "y-partykit/provider";
@@ -38,13 +39,27 @@ const getRandomElement = (list: any[]) =>
 const getRandomColor = () => getRandomElement(colors);
 const getRandomName = () => getRandomElement(names);
 
+function getUTCDateYYYYMMDD() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1; // January is 0
+  const day = now.getUTCDate();
+
+  // Add leading zeros to month and day if needed
+  const formattedMonth = month < 10 ? `0${month}` : `${month}`;
+  const formattedDay = day < 10 ? `0${day}` : `${day}`;
+
+  return `${year}${formattedMonth}${formattedDay}`;
+}
+
 export function ReactBlockNote(props: { theme: "light" | "dark" }) {
   const [doc, provider] = useMemo(() => {
     console.log("create");
     const doc = new Y.Doc();
     const provider = new YPartyKitProvider(
       "blocknote.yousefed.partykit.dev",
-      "homepage-1",
+      // "127.0.0.1:1999", // (dev server)
+      "homepage-" + getUTCDateYYYYMMDD(),
       doc
     );
     return [doc, provider];
@@ -65,6 +80,7 @@ export function ReactBlockNote(props: { theme: "light" | "dark" }) {
           color: getRandomColor(),
         },
       },
+      uploadFile: uploadToTmpFilesDotOrg_DEV_ONLY,
     },
     [props.theme]
   );

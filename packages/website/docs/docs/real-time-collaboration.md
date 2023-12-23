@@ -57,7 +57,7 @@ When a user edits the document, an incremental change (or "update") is captured 
 For development purposes, you can use our Partykit server to test collaborative features. Replace the `WebrtcProvider` provider in the example below with a `YPartyKitProvider`:
 
 ```typescript
-// npm install y-partykit@beta
+// npm install y-partykit
 import YPartyKitProvider from "y-partykit/provider";
 
 const provider = new YPartyKitProvider(
@@ -77,11 +77,11 @@ Below, two editors are connected to each other. Note that anything you type is s
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import YPartyKitProvider from "y-partykit/provider";
 import * as Y from "yjs";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 const doc = new Y.Doc();
 const provider = new YPartyKitProvider(
@@ -118,11 +118,11 @@ export default function App() {
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import YPartyKitProvider from "y-partykit/provider";
 import * as Y from "yjs";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 const doc = new Y.Doc();
 const provider = new YPartyKitProvider(

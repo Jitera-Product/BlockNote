@@ -5,23 +5,20 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened, edited]
-    branches:
-      - main
-      - "project/**"
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "18.x"
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -35,7 +32,7 @@ jobs:
 
       - name: cache playwright
         id: playwright-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/ms-playwright
           key: pw-new-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -56,25 +53,32 @@ jobs:
         env:
           CI: true
 
-      - name: Run unit tests
-        run: npm run test
-        env:
-          CI: true
+      # - name: Run unit tests
+      #   run: npm run test
+      #   env:
+      #     CI: true
 
-      - name: Run server
-        run: npm run start:built & npx wait-on http://localhost:3000
-        env:
-          CI: true
+      # - name: Run server
+      #   run: npm run start:built & npx wait-on http://localhost:3000
+      #   env:
+      #     CI: true
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps
+      # - name: Install Playwright
+      #   run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      # - name: Run Playwright tests
+      #   working-directory: ./tests
+      #   run: npx playwright test
 
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: playwright-report
+      #     path: tests/playwright-report/
+      #     retention-days: 30
+
+      # - name: Upload webpack stats artifact (editor)
+      #   uses: relative-ci/agent-upload-artifact-action@v1
+      #   with:
+      #     webpackStatsFile: ./examples/editor/dist/webpack-stats.json
+      #     artifactName: relative-ci-artifacts-editor

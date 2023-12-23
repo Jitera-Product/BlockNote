@@ -1,13 +1,5 @@
 import { Extension } from "@tiptap/core";
-import { getBlockInfoFromPos } from "../Blocks/helpers/getBlockInfoFromPos";
-
-declare module "@tiptap/core" {
-  interface Commands<ReturnType> {
-    blockTextColor: {
-      setBlockTextColor: (posInBlock: number, color: string) => ReturnType;
-    };
-  }
-}
+import { defaultProps } from "../../blocks/defaultProps";
 
 export const TextColorExtension = Extension.create({
   name: "blockTextColor",
@@ -18,37 +10,18 @@ export const TextColorExtension = Extension.create({
         types: ["blockContainer"],
         attributes: {
           textColor: {
-            default: "default",
+            default: defaultProps.textColor.default,
             parseHTML: (element) =>
               element.hasAttribute("data-text-color")
                 ? element.getAttribute("data-text-color")
-                : "default",
+                : defaultProps.textColor.default,
             renderHTML: (attributes) =>
-              attributes.textColor !== "default" && {
+              attributes.textColor !== defaultProps.textColor.default && {
                 "data-text-color": attributes.textColor,
               },
           },
         },
       },
     ];
-  },
-
-  addCommands() {
-    return {
-      setBlockTextColor:
-        (posInBlock, color) =>
-        ({ state, view }) => {
-          const blockInfo = getBlockInfoFromPos(state.doc, posInBlock);
-          if (blockInfo === undefined) {
-            return false;
-          }
-
-          state.tr.setNodeAttribute(blockInfo.startPos - 1, "textColor", color);
-
-          view.focus();
-
-          return true;
-        },
-    };
   },
 });

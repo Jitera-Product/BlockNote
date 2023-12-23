@@ -1,9 +1,9 @@
 // import logo from './logo.svg'
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import styles from "./App.module.css";
 import { useEffect } from "react";
-import { PartialBlock } from "@blocknote/core";
+import { PartialBlock } from "@jitera/blocknote-core";
 
 type WindowWithProseMirror = Window & typeof globalThis & { ProseMirror: any };
 
@@ -23,7 +23,7 @@ function App() {
       alert("Max blocks reached");
     },
   });
-  const convertedBlocks: PartialBlock[] = [
+  const convertedBlocks: PartialBlock<any, any, any>[] = [
     {
       id: "29",
       content: [
@@ -53,11 +53,6 @@ function App() {
         backgroundColor: "red",
         textAlignment: "left",
       },
-      customProps: {
-        properties: {
-          category: "specification",
-        },
-      },
       children: [],
     },
     {
@@ -77,18 +72,14 @@ function App() {
         backgroundColor: "red",
         textAlignment: "left",
       },
-      customProps: {
-        properties: {
-          parent_id: "29",
-        },
-      },
       children: [],
     },
   ];
 
   useEffect(() => {
-    editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks);
+    editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks as any);
     console.log(editor.topLevelBlocks);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Give tests a way to get prosemirror instance

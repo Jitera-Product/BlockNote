@@ -17,15 +17,15 @@ We recommend using BlockNote with React so you can use the built-in UI component
 
 ## Installing
 
-Instead of `@blocknote/react`, you'll need to install and use `@blocknote/core`.
+Instead of `@blocknote/react`, you'll need to install and use `@jitera/blocknote-core`.
 
 ## Creating an editor
 
 This is how to create a new BlockNote editor:
 
 ```
-import { BlockNoteEditor } from "@blocknote/core";
-const editor = new BlockNoteEditor({
+import { BlockNoteEditor } from "@jitera/blocknote-core";
+const editor = BlockNoteEditor.create({
   element: document.getElementById("root")!, // element to append the editor to
   onUpdate: ({ editor }) => {
     console.log(editor.getJSON());
@@ -47,7 +47,7 @@ Because we can't use the built-in React elements, you'll need to create and regi
 You can do this by passing custom component factories as `uiFactories`, e.g.:
 
 ```
-const editor = new BlockNoteEditor({
+const editor = BlockNoteEditor.create({
   element: document.getElementById("root")!,
   uiFactories: {
     formattingToolbarFactory: customFormattingToolbarFactory,

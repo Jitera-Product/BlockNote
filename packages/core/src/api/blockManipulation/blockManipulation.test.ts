@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { Block, BlockNoteEditor, PartialBlock } from "../..";
-import { DefaultBlockSchema } from "../../extensions/Blocks/api/defaultBlocks";
+import {
+  DefaultBlockSchema,
+  DefaultInlineContentSchema,
+  DefaultStyleSchema,
+} from "../../blocks/defaultBlocks";
+import { BlockNoteEditor } from "../../editor/BlockNoteEditor";
+import { Block, PartialBlock } from "../../schema/blocks/types";
 
 let editor: BlockNoteEditor;
 
@@ -15,18 +20,28 @@ function waitForEditor() {
   });
 }
 
-let singleBlock: PartialBlock<DefaultBlockSchema>;
+let singleBlock: PartialBlock<
+  DefaultBlockSchema,
+  DefaultInlineContentSchema,
+  DefaultStyleSchema
+>;
 
-let multipleBlocks: PartialBlock<DefaultBlockSchema>[];
+let multipleBlocks: PartialBlock<
+  DefaultBlockSchema,
+  DefaultInlineContentSchema,
+  DefaultStyleSchema
+>[];
 
 let insert: (
   placement: "before" | "nested" | "after"
-) => Block<DefaultBlockSchema>[];
+) => Block<
+  DefaultBlockSchema,
+  DefaultInlineContentSchema,
+  DefaultStyleSchema
+>[];
 
 beforeEach(() => {
-  (window as Window & { __TEST_OPTIONS?: any }).__TEST_OPTIONS = {};
-
-  editor = new BlockNoteEditor();
+  editor = BlockNoteEditor.create();
 
   singleBlock = {
     type: "paragraph",
@@ -37,14 +52,14 @@ beforeEach(() => {
     {
       type: "heading",
       props: {
-        level: "1",
+        level: 1,
       },
       content: "Heading 1",
       children: [
         {
           type: "heading",
           props: {
-            level: "1",
+            level: 1,
           },
           content: "Nested Heading 1",
         },
@@ -53,14 +68,14 @@ beforeEach(() => {
     {
       type: "heading",
       props: {
-        level: "2",
+        level: 2,
       },
       content: "Heading 2",
       children: [
         {
           type: "heading",
           props: {
-            level: "2",
+            level: 2,
           },
           content: "Nested Heading 2",
         },
@@ -79,8 +94,52 @@ beforeEach(() => {
 afterEach(() => {
   editor._tiptapEditor.destroy();
   editor = undefined as any;
+});
 
-  delete (window as Window & { __TEST_OPTIONS?: any }).__TEST_OPTIONS;
+describe("Test strong typing", () => {
+  it("checks that block types are inferred correctly", () => {
+    try {
+      editor.updateBlock(
+        { id: "sdf" },
+        {
+          // @ts-expect-error invalid type
+          type: "non-existing",
+        }
+      );
+    } catch (e) {
+      // id doesn't exists, which is fine, this is a compile-time check
+    }
+  });
+
+  it("checks that block props are inferred correctly", () => {
+    try {
+      editor.updateBlock(
+        { id: "sdf" },
+        {
+          type: "paragraph",
+          props: {
+            // @ts-expect-error level not suitable for paragraph
+            level: 1,
+          },
+        }
+      );
+    } catch (e) {
+      // id doesn't exists, which is fine, this is a compile-time check
+    }
+    try {
+      editor.updateBlock(
+        { id: "sdf" },
+        {
+          type: "heading",
+          props: {
+            level: 1,
+          },
+        }
+      );
+    } catch (e) {
+      // id doesn't exists, which is fine, this is a compile-time check
+    }
+  });
 });
 
 describe("Inserting Blocks with Different Placements", () => {
@@ -123,7 +182,7 @@ describe("Insert, Update, & Delete Blocks", () => {
       type: "heading",
       props: {
         textAlignment: "right",
-        level: "3",
+        level: 3,
       },
       content: [
         {

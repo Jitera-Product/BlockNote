@@ -32,6 +32,7 @@ const SIDEBAR_DEFAULT = [
       { text: "Formatting Toolbar", link: "/docs/formatting-toolbar" },
       { text: "Slash Menu", link: "/docs/slash-menu" },
       { text: "Side Menu", link: "/docs/side-menu" },
+      { text: "Image Toolbar", link: "/docs/image-toolbar" },
       { text: "Changing UI Elements", link: "/docs/ui-elements" },
     ],
   },
@@ -119,6 +120,40 @@ const SIDEBAR_DEFAULT = [
   },
 ];
 
+const EXAMPLES_SIDEBAR = [
+  {
+    text: "Basic Examples",
+    items: [
+      { text: "Block Manipulation", link: "/examples/block-manipulation" },
+      {
+        text: "Keyboard Shortcuts",
+        link: "/examples/keyboard-shortcuts",
+      },
+      {
+        text: "Saving & Loading",
+        link: "/examples/saving-loading",
+      },
+      {
+        text: "Changing Font",
+        link: "/examples/changing-font",
+      },
+    ],
+  },
+  {
+    text: "Advanced Examples",
+    items: [
+      {
+        text: "Making UI Elements From Scratch",
+        link: "/examples/custom-ui",
+      },
+      {
+        text: "Alert Block",
+        link: "/examples/alert-block",
+      },
+    ],
+  },
+];
+
 const METADATA_DEFAULT = {
   title: "BlockNote",
   description:
@@ -154,9 +189,13 @@ export default defineConfig({
       light: "/img/logos/banner.svg",
       dark: "/img/logos/banner.dark.svg",
     },
-    nav: [{ text: "Documentation", link: "/docs/introduction" }],
+    nav: [
+      { text: "Documentation", link: "/docs/introduction" },
+      { text: "Examples", link: "/examples/block-manipulation" },
+    ],
     sidebar: {
       "/docs/": SIDEBAR_DEFAULT,
+      "/examples/": EXAMPLES_SIDEBAR,
       // "/tutorial/": SIDEBAR_DEFAULT,
       // "/api": SIDEBAR_DEFAULT,
     },

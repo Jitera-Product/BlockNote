@@ -7,7 +7,7 @@ path: /docs/theming
 
 <script setup>
 import { useData } from 'vitepress';
-import { getTheme, getStyles } from "./demoUtils";
+import { getTheme, getStyles } from "../demoUtils";
 
 const { isDark } = useData();
 </script>
@@ -25,7 +25,7 @@ Take a look at how this is done in the demo below:
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import {
   BlockNoteView,
   darkDefaultTheme,
@@ -33,11 +33,10 @@ import {
   Theme,
   useBlockNote,
 } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 // Custom red light theme
 const lightRedTheme = {
-  type: "light",
   colors: {
     editor: {
       text: "#222222",
@@ -75,7 +74,6 @@ const lightRedTheme = {
 // Custom red dark theme
 const darkRedTheme = {
   ...lightRedTheme,
-  type: "dark",
   colors: {
     ...lightRedTheme.colors,
     editor: {
@@ -127,9 +125,9 @@ In the demo below, we set a custom class on the `blockContainer` element to add 
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 export default function App() {
   // Creates a new editor instance.
@@ -182,14 +180,14 @@ In the demo below, we use it to add some basic styling to the editor's default d
 ::: sandbox {template=react-ts}
 
 ```typescript-vue /App.tsx
-import { BlockNoteEditor } from "@blocknote/core";
+import { BlockNoteEditor } from "@jitera/blocknote-core";
 import {
   BlockNoteView,
   darkDefaultTheme,
   Theme,
   useBlockNote,
 } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import "@jitera/blocknote-core/style.css";
 
 // Default dark theme with additional component styles.
 const theme = {
@@ -247,7 +245,13 @@ There are a number of components that you can override styles for:
 
 `Editor:` The editor itself, excluding menus & toolbars.
 
-`Toolbar:` Component used for the [Formatting Toolbar](/docs/formatting-toolbar) and Hyperlink Toolbar.
+`FileInput:` Component used for file inputs in the Image Toolbar.
+
+`Tabs:` Component used for tabs in the Image Toolbar.
+
+`TextInput:` Component used for text inputs in the Image Toolbar.
+
+`Toolbar:` Component used for the [Formatting Toolbar](/docs/formatting-toolbar), Hyperlink Toolbar, and [Image Toolbar](/docs/image-toolbar).
 
 `Tooltip:` Component for the tooltip that appears on hover, for Formatting Toolbar & Hyperlink Toolbar buttons.
 
