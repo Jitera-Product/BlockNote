@@ -23,7 +23,7 @@ export default function Editor() {
     image: Image,
     separator: Separator,
     // toc: TableOfContents,
-  };
+  } as any;
 
   const slashMenuItems = [
     insertAlert,

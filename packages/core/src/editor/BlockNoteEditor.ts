@@ -549,7 +549,7 @@ export class BlockNoteEditor<
         // initial content, as the schema may contain custom blocks which need
         // it to render.
         if (initialContent !== undefined) {
-          this.replaceBlocks(this.topLevelBlocks, initialContent as any);
+          this.replaceBlocks(this.topLevelBlocks, initialContent as any, true);
         }
 
         newOptions.onEditorReady?.(this);
@@ -1001,9 +1001,10 @@ export class BlockNoteEditor<
    */
   public replaceBlocks(
     blocksToRemove: BlockIdentifier[],
-    blocksToInsert: PartialBlock<BSchema, ISchema, SSchema>[]
+    blocksToInsert: PartialBlock<BSchema, ISchema, SSchema>[],
+    eraseHistory = false
   ) {
-    replaceBlocks(blocksToRemove, blocksToInsert, this);
+    replaceBlocks(blocksToRemove, blocksToInsert, this, eraseHistory);
   }
 
   /**
