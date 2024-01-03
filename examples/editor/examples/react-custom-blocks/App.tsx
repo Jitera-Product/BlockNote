@@ -109,7 +109,6 @@ export const bracketsParagraphBlock = createReactBlockSpec(
   },
   {
     render: (props) => {
-      console.log("====render");
       return (
         <div className={"brackets-paragraph"}>
           <div contentEditable={"false"}>{"["}</div>
