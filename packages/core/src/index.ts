@@ -27,3 +27,4 @@ export * from "./api/testUtil/partialBlockTestUtil";
 export * from "./extensions/UniqueID/UniqueID";
 export { UnreachableCaseError } from "./util/typescript";
 export * from "./schema";
+export * from "./util/constants";
