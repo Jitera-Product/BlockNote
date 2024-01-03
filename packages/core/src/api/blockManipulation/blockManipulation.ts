@@ -11,6 +11,7 @@ import {
 } from "../../schema";
 import { blockToNode } from "../nodeConversions/nodeConversions";
 import { getNodeById } from "../nodeUtil";
+import { EditorState } from "prosemirror-state";
 
 export function insertBlocks<
   BSchema extends BlockSchema,
@@ -20,7 +21,8 @@ export function insertBlocks<
   blocksToInsert: PartialBlock<BSchema, I, S>[],
   referenceBlock: BlockIdentifier,
   placement: "before" | "after" | "nested" = "before",
-  editor: BlockNoteEditor<BSchema, I, S>
+  editor: BlockNoteEditor<BSchema, I, S>,
+  eraseHistory?: boolean
 ): void {
   const ttEditor = editor._tiptapEditor;
 
@@ -67,6 +69,15 @@ export function insertBlocks<
   }
 
   ttEditor.view.dispatch(ttEditor.state.tr.insert(insertionPos, nodesToInsert));
+
+  if (eraseHistory) {
+    const newEditorState = EditorState.create({
+      doc: ttEditor.state.doc,
+      plugins: ttEditor.state.plugins,
+      schema: ttEditor.state.schema,
+    });
+    ttEditor.view.updateState(newEditorState);
+  }
 }
 
 export function updateBlock<
@@ -87,7 +98,8 @@ export function updateBlock<
 
 export function removeBlocks(
   blocksToRemove: BlockIdentifier[],
-  editor: Editor
+  editor: Editor,
+  eraseHistory?: boolean
 ) {
   const idsOfBlocksToRemove = new Set<string>(
     blocksToRemove.map((block) =>
@@ -122,6 +134,15 @@ export function removeBlocks(
     return false;
   });
 
+  if (eraseHistory) {
+    const newEditorState = EditorState.create({
+      doc: editor.state.doc,
+      plugins: editor.state.plugins,
+      schema: editor.state.schema,
+    });
+    editor.view.updateState(newEditorState);
+  }
+
   if (idsOfBlocksToRemove.size > 0) {
     const notFoundIds = [...idsOfBlocksToRemove].join("\n");
 
@@ -139,8 +160,15 @@ export function replaceBlocks<
 >(
   blocksToRemove: BlockIdentifier[],
   blocksToInsert: PartialBlock<BSchema, I, S>[],
-  editor: BlockNoteEditor<BSchema, I, S>
+  editor: BlockNoteEditor<BSchema, I, S>,
+  eraseHistory = false
 ) {
-  insertBlocks(blocksToInsert, blocksToRemove[0], "before", editor);
-  removeBlocks(blocksToRemove, editor._tiptapEditor);
+  insertBlocks(
+    blocksToInsert,
+    blocksToRemove[0],
+    "before",
+    editor,
+    eraseHistory
+  );
+  removeBlocks(blocksToRemove, editor._tiptapEditor, eraseHistory);
 }
