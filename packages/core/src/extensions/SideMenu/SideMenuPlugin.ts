@@ -442,6 +442,12 @@ export class SideMenuView<
       return;
     }
 
+    // hide sidemenu when hover from editor to outside
+    if (!cursorWithinEditor && this.sideMenuState) {
+      this.sideMenuState.show = false;
+      this.updateSideMenu(this.sideMenuState);
+    }
+
     this.horizontalPosAnchor = editorBoundingBox.x;
 
     // Gets block at mouse cursor's vertical position.
@@ -484,7 +490,7 @@ export class SideMenuView<
       const blockContentBoundingBox = blockContent.getBoundingClientRect();
 
       this.sideMenuState = {
-        show: true,
+        show: cursorWithinEditor,
         referencePos: new DOMRect(
           this.horizontalPosAnchoredAtRoot
             ? this.horizontalPosAnchor
