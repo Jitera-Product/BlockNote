@@ -1,13 +1,33 @@
-import { defaultBlockSpecs, defaultProps } from "@jitera/blocknote-core";
+import {
+  Block,
+  BlockNoteEditor,
+  PartialBlock,
+  defaultBlockSpecs,
+  defaultProps,
+} from "@jitera/blocknote-core";
 import "@jitera/blocknote-core/style.css";
 import {
   BlockNoteView,
+  ReactSlashMenuItem,
   createReactBlockSpec,
+  getDefaultReactSlashMenuItems,
   useBlockNote,
 } from "@blocknote/react";
 import "../vanilla-custom-blocks/style.css";
 import { memo, useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
+import YPartyKitProvider from "y-partykit/provider";
+import * as Y from "yjs";
+import { HiOutlineGlobeAlt } from "react-icons/hi";
+
+const doc = new Y.Doc();
+
+const provider = new YPartyKitProvider(
+  "blocknote-dev.yousefed.partykit.dev",
+  // use a unique name as a "room" for your application:
+  "your-project-name",
+  doc
+);
 
 type WindowWithProseMirror = Window & typeof globalThis & { ProseMirror: any };
 
@@ -208,6 +228,32 @@ const JNCodeBlock = createReactBlockSpec(
   }
 );
 
+const insertHelloWorld = (editor: BlockNoteEditor) => {
+  // Block that the text cursor is currently in.
+  const currentBlock: Block<any, any, any> =
+    editor.getTextCursorPosition().block;
+
+  // New block we want to insert.
+  const helloWorldBlock: PartialBlock<any, any, any> = {
+    type: "simpleImage",
+    props: {
+      src: "https://t3.ftcdn.net/jpg/02/48/42/64/360_F_248426448_NVKLywWqArG2ADUxDq6QprtIzsF82dMF.jpg",
+    },
+  };
+
+  // Inserting the new block after the current one.
+  editor.insertBlocks([helloWorldBlock as any], currentBlock, "after");
+};
+
+const insertHelloWorldItem: ReactSlashMenuItem = {
+  name: "Insert Hello World",
+  execute: insertHelloWorld as any,
+  aliases: ["helloworld", "hw"],
+  group: "Other",
+  icon: <HiOutlineGlobeAlt size={18} />,
+  hint: "Used to insert a block with 'Hello World' below.",
+};
+
 export function ReactCustomBlocks() {
   const editor = useBlockNote(
     {
@@ -222,8 +268,24 @@ export function ReactCustomBlocks() {
         alert: alertBlock,
         simpleImage: simpleImageBlock,
         bracketsParagraph: bracketsParagraphBlock,
-        codeBlock: JNCodeBlock,
       },
+      collaboration: {
+        // The Yjs Provider responsible for transporting updates:
+        provider,
+        // Where to store BlockNote data in the Y.Doc:
+        fragment: doc.getXmlFragment("document-storesss"),
+        // Information (name and color) for this user:
+        user: {
+          name: "My Username",
+          color: "#ff0000",
+        },
+      },
+
+      slashMenuItems: [
+        ...getDefaultReactSlashMenuItems(),
+        insertHelloWorldItem,
+      ],
+
       initialContent: [
         {
           id: "ef3ea6c6-f45c-4dfd-a815-12e8c967a5c0",
