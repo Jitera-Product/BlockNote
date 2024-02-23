@@ -14,6 +14,7 @@ import { ReactInlineContent } from "../examples/react-custom-inline-content/App"
 import { ReactStyles } from "../examples/react-custom-styles/App";
 import { CustomBlocks } from "../examples/vanilla-custom-blocks/App";
 import { InlineContent } from "../examples/vanilla-custom-inline-content/App";
+import { Collaboration } from "../examples/collaboration/App";
 import "./style.css";
 
 window.React = React;
@@ -48,6 +49,11 @@ const editors = [
     title: "React custom blocks",
     path: "/react-blocks",
     component: ReactCustomBlocks,
+  },
+  {
+    title: "Collaboration",
+    path: "/collaboration",
+    component: Collaboration,
   },
 ];
 

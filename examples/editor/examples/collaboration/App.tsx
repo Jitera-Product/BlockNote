@@ -5,11 +5,13 @@ import { uploadToTmpFilesDotOrg_DEV_ONLY } from "@jitera/blocknote-core";
 
 import YPartyKitProvider from "y-partykit/provider";
 import * as Y from "yjs";
+import { useEffect, useState } from "react";
 
 const doc = new Y.Doc();
 
 const provider = new YPartyKitProvider(
-  "blocknote-dev.yousefed.partykit.dev",
+  // "blocknote-dev.yousefed.partykit.dev",
+  "http://127.0.0.1:1999",
   // use a unique name as a "room" for your application:
   "your-project-name",
   doc
@@ -17,7 +19,7 @@ const provider = new YPartyKitProvider(
 
 type WindowWithProseMirror = Window & typeof globalThis & { ProseMirror: any };
 
-export function App() {
+export function Collaboration() {
   const editor = useBlockNote({
     domAttributes: {
       editor: {
@@ -45,4 +47,4 @@ export function App() {
   return <BlockNoteView className="root" editor={editor} />;
 }
 
-export default App;
+export default Collaboration;

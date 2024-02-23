@@ -11,7 +11,7 @@ import {
 } from "../api/blockManipulation/blockManipulation";
 import { createExternalHTMLExporter } from "../api/exporters/html/externalHTMLExporter";
 import { blocksToMarkdown } from "../api/exporters/markdown/markdownExporter";
-import { getBlockInfoFromPos } from "../api/getBlockInfoFromPos";
+import { getBlockInfo, getBlockInfoFromPos } from "../api/getBlockInfoFromPos";
 import {
   blockToNode,
   nodeToBlock,
@@ -299,15 +299,19 @@ export class BlockNoteEditor<
       if (_node.type.name !== "blockContainer") {
         return;
       }
-      sliceTopLevelBlocks.push(
-        nodeToBlock(
-          _node,
-          this.blockSchema,
-          this.inlineContentSchema,
-          this.styleSchema,
-          this.blockCache
-        )
-      );
+
+      const info = getBlockInfo(_node);
+      if (info.contentType.name && info.contentType.name !== "blockGroup") {
+        sliceTopLevelBlocks.push(
+          nodeToBlock(
+            _node,
+            this.blockSchema,
+            this.inlineContentSchema,
+            this.styleSchema,
+            this.blockCache
+          )
+        );
+      }
       return false;
     });
 
