@@ -960,7 +960,8 @@ export class BlockNoteEditor<
     blocksToInsert: PartialBlock<BSchema, ISchema, SSchema>[],
     referenceBlock: BlockIdentifier,
     placement: "before" | "after" | "nested" = "before",
-    checkBlocksLimit = false
+    checkBlocksLimit = false,
+    eraseHistory = false
   ): void {
     if (checkBlocksLimit) {
       if (
@@ -971,7 +972,7 @@ export class BlockNoteEditor<
       }
     }
     // insertBlocks(blocksToInsert, referenceBlock, placement, this._tiptapEditor);
-    insertBlocks(blocksToInsert, referenceBlock, placement, this);
+    insertBlocks(blocksToInsert, referenceBlock, placement, this, eraseHistory);
   }
 
   /**
