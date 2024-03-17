@@ -1022,7 +1022,10 @@ export class BlockNoteEditor<
     for (const mark of marks) {
       const config = this.styleSchema[mark.type.name];
       if (!config) {
-        console.warn("mark not found in styleschema", mark.type.name);
+        if (mark.type.name !== "customContentProps") {
+          // workaround, ignore customContentProps
+          console.warn("mark not found in styleschema", mark.type.name);
+        }
         continue;
       }
       if (config.propSchema === "boolean") {
