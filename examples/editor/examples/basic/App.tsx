@@ -68,7 +68,7 @@ export function App() {
   useEffect(() => {
     if (!editor) return;
     setTimeout(() => {
-      editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks as any, true);
+      editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks as any);
     }, 1000);
   }, [editor]);
 
