@@ -8,6 +8,50 @@ import { useEffect } from "react";
 
 type WindowWithProseMirror = Window & typeof globalThis & { ProseMirror: any };
 
+const convertedBlocks: PartialBlock<any, any, any>[] = [
+  {
+    id: "29",
+    content: [
+      {
+        type: "text",
+        text: "textUntitled",
+        styles: {
+          textColor: "yellow",
+        },
+      },
+      {
+        type: "text",
+        text: "pageUntitled",
+        styles: {
+          textColor: "red",
+        },
+      },
+    ],
+    props: {
+      textColor: "default",
+      backgroundColor: "red",
+      textAlignment: "left",
+    },
+    children: [],
+  },
+  {
+    id: "28",
+    content: [
+      {
+        type: "text",
+        text: "Untitled",
+        styles: {},
+      },
+    ],
+    props: {
+      textColor: "default",
+      backgroundColor: "red",
+      textAlignment: "left",
+    },
+    children: [],
+  },
+];
+
 export function App() {
   const editor = useBlockNote({
     domAttributes: {
@@ -17,64 +61,16 @@ export function App() {
       },
     },
     uploadFile: uploadToTmpFilesDotOrg_DEV_ONLY,
+    onEditorContentChange: (editor) => {},
+    // initialContent: convertedBlocks as any,
   });
-  const convertedBlocks: PartialBlock<any, any, any>[] = [
-    {
-      id: "29",
-      content: [
-        {
-          type: "text",
-          text: "textUntitled",
-          styles: {
-            textColor: "yellow",
-          },
-          customContentProps: {
-            mention: "abc",
-          },
-        },
-        {
-          type: "text",
-          text: "pageUntitled",
-          styles: {
-            textColor: "red",
-          },
-          customContentProps: {
-            linkToPage: "pageAbc",
-          },
-        },
-      ],
-      props: {
-        textColor: "default",
-        backgroundColor: "red",
-        textAlignment: "left",
-      },
-      children: [],
-    },
-    {
-      id: "28",
-      content: [
-        {
-          type: "text",
-          text: "Untitled",
-          styles: {},
-          customContentProps: {
-            anything: "abc",
-          },
-        },
-      ],
-      props: {
-        textColor: "default",
-        backgroundColor: "red",
-        textAlignment: "left",
-      },
-      children: [],
-    },
-  ];
 
   useEffect(() => {
-    editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks as any);
-    console.log(editor.topLevelBlocks);
-  }, []);
+    if (!editor) return;
+    setTimeout(() => {
+      editor.replaceBlocks(editor.topLevelBlocks, convertedBlocks as any);
+    }, 1000);
+  }, [editor]);
 
   // Give tests a way to get prosemirror instance
   (window as WindowWithProseMirror).ProseMirror = editor?._tiptapEditor;
